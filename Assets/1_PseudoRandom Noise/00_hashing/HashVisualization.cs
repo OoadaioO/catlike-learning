@@ -1,24 +1,57 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
 public class HashVisualization : MonoBehaviour {
 
+
+
+
+    public enum Shape {
+        Plane,
+        SphereUV,
+        Sphere,
+        Torus,
+    }
+
+    static Shapes.ScheduleDelegate[] shapeJobs = {
+        Shapes.Job<Shapes.Plane>.ScheduleParallel,
+        Shapes.Job<Shapes.SphereUV>.ScheduleParallel,
+        Shapes.Job<Shapes.Sphere>.ScheduleParallel,
+        Shapes.Job<Shapes.Torus>.ScheduleParallel,
+    };
+
+
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
     struct HashJob : IJobFor {
+
+        [ReadOnly]
+        public NativeArray<float3x4> positions;
+
         [WriteOnly]
-        public NativeArray<uint> hashes;
-        public int resolution;
-        public float inResolution;
-        public SmallXXHash hash;
+        public NativeArray<uint4> hashes;
+
+        public SmallXXHash4 hash;
+
+        public float3x4 domainTRS;
+
+        float4x3 TransformPositions(float3x4 trs, float4x3 p) => float4x3(
+            trs.c0.x * p.c0 + trs.c1.x * p.c1 + trs.c2.x * p.c2 + trs.c3.x,
+            trs.c0.y * p.c0 + trs.c1.y * p.c1 + trs.c2.y * p.c2 + trs.c3.y,
+            trs.c0.z * p.c0 + trs.c1.z * p.c1 + trs.c2.z * p.c2 + trs.c3.z
+        );
 
         public void Execute(int i) {
-            int v = (int)floor(i * inResolution + 0.0001f);
-            int u = i - v * resolution - resolution / 2;
-            v -= resolution / 2;
-            hashes[i] = hash.Eat(u).Eat(v);
+            float4x3 p = TransformPositions(domainTRS, transpose(positions[i]));
+
+            int4 u = (int4)floor(p.c0);
+            int4 v = (int4)floor(p.c1);
+            int4 w = (int4)floor(p.c2);
+
+            hashes[i] = hash.Eat(u).Eat(v).Eat(w);
         }
     }
 
@@ -27,47 +60,72 @@ public class HashVisualization : MonoBehaviour {
     [SerializeField] private Material material;
     [SerializeField] private Mesh instanceMesh;
     [SerializeField] private int seed;
-    [Range(-2f, 2f)]
-    [SerializeField] private float verticalOffset = 1f;
+    [Range(-0.5f, 0.5f)]
+    [SerializeField] private float displacement = 0.1f;
 
-    private ComputeBuffer computeBuffer;
-    private NativeArray<uint> hashes;
+    [Range(0.1f, 10f)]
+    [SerializeField] private float instanceScale = 2f;
 
+    [SerializeField]
+    private SpaceTRS domain = new SpaceTRS {
+        scale = 8f
+    };
+
+    [SerializeField] private Shape shape;
+
+    private bool isDirty = true;
+    private NativeArray<uint4> hashes;
+    private NativeArray<float3x4> positions, normals;
+    private ComputeBuffer hashesBuffer, positionsBuffer, normalsBuffer;
 
     static MaterialPropertyBlock propertyBlock;
     static int
         configId = Shader.PropertyToID("_Config"),
-        hashesId = Shader.PropertyToID("_Hashes");
+        hashesId = Shader.PropertyToID("_Hashes"),
+        positionsId = Shader.PropertyToID("_Positions"),
+        normalId = Shader.PropertyToID("_Normals");
 
     private void OnEnable() {
+        isDirty = true;
+
         int length = resolution * resolution;
-        hashes = new NativeArray<uint>(length, Allocator.Persistent);
-        computeBuffer = new ComputeBuffer(length, 4);
+        length = length / 4 + (length & 1);
 
-        new HashJob {
-            hashes = hashes,
-            resolution = resolution,
-            inResolution = 1f / resolution,
-            hash = SmallXXHash.Seed(seed),
-        }
-       .ScheduleParallel(hashes.Length, resolution, default)
-       .Complete();
+        hashes = new NativeArray<uint4>(length, Allocator.Persistent);
+        positions = new NativeArray<float3x4>(length, Allocator.Persistent);
+        normals = new NativeArray<float3x4>(length, Allocator.Persistent);
 
-        computeBuffer.SetData(hashes);
+
+        hashesBuffer = new ComputeBuffer(length * 4, 4);
+        positionsBuffer = new ComputeBuffer(length * 4, 3 * 4);
+        normalsBuffer = new ComputeBuffer(length * 4, 3 * 4);
+
 
         propertyBlock ??= new MaterialPropertyBlock();
-        propertyBlock.SetBuffer(hashesId, computeBuffer);
-        propertyBlock.SetVector(configId, new Vector4(resolution, 1f / resolution, verticalOffset / resolution));
+        propertyBlock.SetBuffer(hashesId, hashesBuffer);
+        propertyBlock.SetBuffer(positionsId, positionsBuffer);
+        propertyBlock.SetBuffer(normalId, normalsBuffer);
+
+        propertyBlock.SetVector(configId, new Vector4(resolution, instanceScale / resolution, displacement));
     }
 
     private void OnDisable() {
         hashes.Dispose();
-        computeBuffer.Release();
-        computeBuffer = null;
+        positions.Dispose();
+        normals.Dispose();
+
+        hashesBuffer.Release();
+        positionsBuffer.Release();
+        normalsBuffer.Release();
+
+        hashesBuffer = null;
+        positionsBuffer = null;
+        normalsBuffer = null;
+
     }
 
     private void OnValidate() {
-        if (computeBuffer != null) {
+        if (hashesBuffer != null) {
             OnDisable();
             OnEnable();
         }
@@ -75,13 +133,34 @@ public class HashVisualization : MonoBehaviour {
 
 
     private void Update() {
+        if (isDirty || transform.hasChanged) {
+            isDirty = false;
+            transform.hasChanged = false;
+
+            JobHandle handle = shapeJobs[(int)shape](
+                positions, normals, resolution, transform.localToWorldMatrix, default
+            );
+
+            new HashJob {
+                positions = positions,
+                hashes = hashes,
+                hash = SmallXXHash.Seed(seed),
+                domainTRS = domain.Matrix
+            }
+           .ScheduleParallel(hashes.Length, resolution, handle).Complete();
+
+
+            hashesBuffer.SetData(hashes.Reinterpret<uint>(4 * 4));
+            positionsBuffer.SetData(positions.Reinterpret<float3>(3 * 4 * 4));
+            normalsBuffer.SetData(normals.Reinterpret<float3>(3 * 4 * 4));
+        }
 
         Graphics.DrawMeshInstancedProcedural(
                 instanceMesh,
                 0,
                 material,
-                new Bounds(Vector3.zero, Vector3.one),
-                computeBuffer.count,
+                new Bounds(transform.position, float3(2f * cmax(abs(transform.lossyScale)) + displacement)),
+                resolution * resolution,
                 propertyBlock
             );
 
