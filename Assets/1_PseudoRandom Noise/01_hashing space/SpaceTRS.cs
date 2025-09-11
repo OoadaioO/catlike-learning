@@ -4,7 +4,6 @@ using Unity.Mathematics;
 public struct SpaceTRS {
     public float3 translation, rotation, scale;
 
-
     public float3x4 Matrix {
         get {
             float4x4 m = float4x4.TRS(
