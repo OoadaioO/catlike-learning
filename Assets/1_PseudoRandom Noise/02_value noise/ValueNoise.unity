@@ -284,13 +284,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc4cccac24a5440ea8a83e6e413d3b61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resolution: 64
+  resolution: 256
   material: {fileID: 2100000, guid: 69a7612ccfe704191ae472f0d240c0cd, type: 2}
   instanceMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  displacement: 0.1
+  displacement: 0.05
   instanceScale: 2
   shape: 0
   seed: 0
+  noiseType: 0
+  dimensions: 2
   domain:
     translation:
       x: 0
@@ -301,9 +303,9 @@ MonoBehaviour:
       y: 0
       z: 0
     scale:
-      x: 8
-      y: 8
-      z: 8
+      x: 16
+      y: 16
+      z: 16
 --- !u!1 &1991198590
 GameObject:
   m_ObjectHideFlags: 0
