@@ -287,10 +287,15 @@ MonoBehaviour:
   resolution: 256
   material: {fileID: 2100000, guid: 69a7612ccfe704191ae472f0d240c0cd, type: 2}
   instanceMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  displacement: 0.05
+  displacement: 0.02
   instanceScale: 2
   shape: 0
-  seed: 0
+  noiseSettings:
+    seed: 0
+    frequency: 2
+    octaves: 1
+    lacunarity: 2
+    persistence: 0.5
   noiseType: 0
   dimensions: 2
   domain:
@@ -303,9 +308,9 @@ MonoBehaviour:
       y: 0
       z: 0
     scale:
-      x: 16
-      y: 16
-      z: 16
+      x: 8
+      y: 8
+      z: 8
 --- !u!1 &1991198590
 GameObject:
   m_ObjectHideFlags: 0

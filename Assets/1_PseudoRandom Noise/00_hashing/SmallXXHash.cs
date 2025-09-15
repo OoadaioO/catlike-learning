@@ -77,6 +77,8 @@ public readonly struct SmallXXHash4 {
         return avalanche;
     }
 
+    public static SmallXXHash4 operator +(SmallXXHash4 h, int v) => h.accumulator + (uint) v;
+
     public static SmallXXHash4 Seed(int4 seed) => (uint4)seed + primeE;
 
     static uint4 RotateLeft(uint4 data, int steps) => (data << steps) | (data >> 32 - steps);
