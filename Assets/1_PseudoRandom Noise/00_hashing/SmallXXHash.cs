@@ -81,6 +81,9 @@ public readonly struct SmallXXHash4 {
 
     public static SmallXXHash4 Seed(int4 seed) => (uint4)seed + primeE;
 
+    public static SmallXXHash4 Select (SmallXXHash4 a, SmallXXHash4 b, bool4 c) =>
+		math.select(a.accumulator, b.accumulator, c);
+
     static uint4 RotateLeft(uint4 data, int steps) => (data << steps) | (data >> 32 - steps);
 
     public uint4 GetBits (int count, int shift) =>
