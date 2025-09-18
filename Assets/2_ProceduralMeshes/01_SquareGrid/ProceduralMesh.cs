@@ -8,8 +8,23 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class ProceduralMesh : MonoBehaviour {
 
-    [Range(1, 10)]
+    static MeshJobScheduleDelegate[] jobs = {
+        MeshJob<SquareGrid,MultiStream>.ScheduleParallel,
+        MeshJob<SharedSQuareGrid,MultiStream>.ScheduleParallel
+    };
+
+    public enum MeshType{
+        SquareGrid,
+        SharedSQuareGrid,
+    }
+
+
+
+    [Range(1, 50)]
     [SerializeField] private int resolution;
+
+    [SerializeField] private MeshType meshType;
+
 
     private Mesh mesh;
 
@@ -24,13 +39,15 @@ public class ProceduralMesh : MonoBehaviour {
     private void GenerateMesh() {
         Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
         Mesh.MeshData meshData = meshDataArray[0];
-        MeshJob<SquareGrid, MultiStream>.ScheduleParallel(
+
+        jobs[(int)meshType](
             mesh,
             meshData,
             resolution,
             default
         )
         .Complete();
+
         Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
     }
 
