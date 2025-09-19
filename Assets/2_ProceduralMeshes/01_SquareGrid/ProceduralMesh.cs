@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using ProceduralMeshes;
 using ProceduralMeshes.Generators;
 using ProceduralMeshes.Streams;
@@ -9,13 +8,19 @@ using UnityEngine;
 public class ProceduralMesh : MonoBehaviour {
 
     static MeshJobScheduleDelegate[] jobs = {
-        MeshJob<SquareGrid,MultiStream>.ScheduleParallel,
-        MeshJob<SharedSQuareGrid,MultiStream>.ScheduleParallel
+        MeshJob<SquareGrid,SingleStream>.ScheduleParallel,
+        MeshJob<SharedSQuareGrid,SingleStream>.ScheduleParallel,
+        MeshJob<SharedTriangleGrid,SingleStream>.ScheduleParallel,
+        MeshJob<PointyHexagonGrid,SingleStream>.ScheduleParallel,
+        MeshJob<FlatHexagonGrid,SingleStream>.ScheduleParallel,
     };
 
-    public enum MeshType{
+    public enum MeshType {
         SquareGrid,
         SharedSQuareGrid,
+        SharedTriangleGrid,
+        PointyHexagonGrid,
+        FlatHexagonGrid,
     }
 
 

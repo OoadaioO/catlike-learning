@@ -47,12 +47,12 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Ripple: 0
+    - _Ripple: 1
     - _Ripple_Amplitude: 0.078
     - _Ripple_Peroid: 2
     - _Ripple_Speed: 0.178
     m_Colors:
-    - _Ripple_Origin: {r: 0, g: 0, b: 0, a: 0}
+    - _Ripple_Origin: {r: -1, g: 0, b: 1, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &6288750330422531319
 MonoBehaviour:
