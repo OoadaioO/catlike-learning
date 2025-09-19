@@ -47,7 +47,7 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Ripple: 1
+    - _Ripple: 0
     - _Ripple_Amplitude: 0.078
     - _Ripple_Peroid: 2
     - _Ripple_Speed: 0.178
