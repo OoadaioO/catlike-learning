@@ -14,6 +14,7 @@ public class ProceduralMesh : MonoBehaviour {
         MeshJob<PointyHexagonGrid,SingleStream>.ScheduleParallel,
         MeshJob<FlatHexagonGrid,SingleStream>.ScheduleParallel,
         MeshJob<UVSphere,SingleStream>.ScheduleParallel,
+        MeshJob<CubeSphere,SingleStream>.ScheduleParallel,
     };
 
     public enum MeshType {
@@ -23,6 +24,7 @@ public class ProceduralMesh : MonoBehaviour {
         PointyHexagonGrid,
         FlatHexagonGrid,
         UVSphere,
+        CubeSphere
     }
 
     public enum MaterialMode { Flat, Ripple, LatLonMap, CubeMap };
