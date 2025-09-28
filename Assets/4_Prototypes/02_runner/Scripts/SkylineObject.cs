@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,6 +19,7 @@ public class SkylineObject : MonoBehaviour {
     public FloatRange GapY => gapY.Shift(transform.localPosition.y);
 
 #if UNITY_EDITOR
+    [NonSerialized]
     static List<Stack<SkylineObject>> pools;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
