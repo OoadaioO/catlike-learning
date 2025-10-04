@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: GridShader
+  m_Name: GroundGrid
   m_Shader: {fileID: -6465566751694194690, guid: 912df1e1269cd433e80329b35e82e017, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -42,8 +42,8 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - _Background: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.44339615, g: 0.44339615, b: 0.44339615, a: 1}
+    - _Background: {r: 0.43747774, g: 0.8207547, b: 0.45144686, a: 1}
+    - _Color: {r: 0.028301895, g: 0.028301895, b: 0.028301895, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &5089850384496424049
 MonoBehaviour:
