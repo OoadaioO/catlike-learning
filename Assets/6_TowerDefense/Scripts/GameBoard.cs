@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using tower.defense;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour {
@@ -194,13 +195,18 @@ public class GameBoard : MonoBehaviour {
         }
     }
 
-    public void ToggleTower(GameTile tile) {
+    public void ToggleTower(GameTile tile,TowerType towerType) {
         if (tile.Content.Type == GameTileContentType.Tower) {
-            updatingContent.Remove(tile.Content); ;
-            tile.Content = contentFactory.Get(GameTileContentType.Empty);
-            FindPaths();
+            updatingContent.Remove(tile.Content);
+            if(((Tower)tile.Content).TowerType == towerType){
+                tile.Content = contentFactory.Get(GameTileContentType.Empty);
+                FindPaths();
+            }else{
+                tile.Content = contentFactory.Get(towerType);
+                updatingContent.Add(tile.Content);
+            }
         } else if (tile.Content.Type == GameTileContentType.Empty) {
-            tile.Content = contentFactory.Get(GameTileContentType.Tower);
+            tile.Content = contentFactory.Get(towerType);
             if (FindPaths()) {
                 updatingContent.Add(tile.Content);
             } else {
@@ -208,7 +214,7 @@ public class GameBoard : MonoBehaviour {
                 FindPaths();
             }
         } else if (tile.Content.Type == GameTileContentType.Wall) {
-            tile.Content = contentFactory.Get(GameTileContentType.Tower);
+            tile.Content = contentFactory.Get(towerType);
             updatingContent.Add(tile.Content);
         }
     }

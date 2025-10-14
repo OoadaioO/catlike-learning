@@ -1,7 +1,7 @@
 using tower.defense;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour {
+public class Enemy : GameBehavior {
 
     [SerializeField] Transform model;
 
@@ -47,7 +47,7 @@ public class Enemy : MonoBehaviour {
 
 
 
-    public bool GameUpdate() {
+    public override bool GameUpdate() {
 
         if(Health <1f ){
             OriginFactory.Reclaim(this);

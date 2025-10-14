@@ -343,7 +343,11 @@ MonoBehaviour:
   board: {fileID: 988000572}
   tileContentFactory: {fileID: 11400000, guid: b503241a06ad04dd893cdb7576136409, type: 2}
   enemyFactory: {fileID: 11400000, guid: 5bf8601fbf9ef423f8f7af80e2995143, type: 2}
+  warFactory: {fileID: 11400000, guid: 67ff3a04c1cc44d7b90367955905b6e1, type: 2}
   spawnSpeed: 1
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!4 &1585137597
 Transform:
   m_ObjectHideFlags: 0

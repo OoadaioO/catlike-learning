@@ -10,18 +10,45 @@ namespace tower.defense {
         [SerializeField] GameBoard board;
         [SerializeField] GameTileContentFactory tileContentFactory;
         [SerializeField] EnemyFactory enemyFactory;
+        [SerializeField] WarFactory warFactory;
         [SerializeField, Range(0.1f, 10f)] float spawnSpeed = 1f;
+        [SerializeField] LayerMask enemyLayerMask = 1 << 8;
+
 
         float spawnProgress;
 
-        EnemyCollection enemies = new EnemyCollection();
+        TowerType selectTowerType;
+
+        GameBehaviorCollection enemies = new GameBehaviorCollection();
+        GameBehaviorCollection nonEnemies = new GameBehaviorCollection();
 
         Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        static Game instance;
+
+        public static Shell SpawnShell() {
+            Shell shell = instance.warFactory.Shell;
+            instance.nonEnemies.Add(shell);
+            return shell;
+        }
+
+        public static Explosion SpawnExplosion() {
+            Explosion explosion = instance.warFactory.Explosion;
+            instance.nonEnemies.Add(explosion);
+            return explosion;
+        }
+
+        private void OnEnable() {
+            TargetPoint.SetEnemyLayerMask(enemyLayerMask);
+            instance = this;
+        }
+
 
         private void Awake() {
             board.Initialize(boardSize, tileContentFactory);
             board.ShowGrid = true;
         }
+
 
         private void OnValidate() {
             if (boardSize.x < 2) {
@@ -48,6 +75,14 @@ namespace tower.defense {
                 board.ShowGrid = !board.ShowGrid;
             }
 
+            if (Input.GetKeyDown(KeyCode.Alpha1)) {
+                selectTowerType = TowerType.Laser;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha2)) {
+                selectTowerType = TowerType.Mortar;
+            }
+
             spawnProgress += spawnSpeed * Time.deltaTime;
             while (spawnProgress >= 1f) {
                 spawnProgress -= 1f;
@@ -57,6 +92,7 @@ namespace tower.defense {
             enemies.GameUpdate();
             Physics.SyncTransforms();
             board.GameUpdate();
+            nonEnemies.GameUpdate();
         }
 
         void SpawnEnemy() {
@@ -83,7 +119,7 @@ namespace tower.defense {
             GameTile tile = board.GetTile(TouchRay);
             if (tile != null) {
                 if (Input.GetKey(KeyCode.LeftShift)) {
-                    board.ToggleTower(tile);
+                    board.ToggleTower(tile, selectTowerType);
                 } else {
                     board.ToggleWall(tile);
                 }
