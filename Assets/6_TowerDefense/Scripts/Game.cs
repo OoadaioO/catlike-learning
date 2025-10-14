@@ -49,15 +49,17 @@ namespace tower.defense {
             }
 
             spawnProgress += spawnSpeed * Time.deltaTime;
-            while(spawnProgress >= 1f){
+            while (spawnProgress >= 1f) {
                 spawnProgress -= 1f;
                 SpawnEnemy();
             }
 
             enemies.GameUpdate();
+            Physics.SyncTransforms();
+            board.GameUpdate();
         }
 
-        void SpawnEnemy(){
+        void SpawnEnemy() {
             GameTile spawnPoint = board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
             Enemy enemy = enemyFactory.Get();
             enemy.SpawnOn(spawnPoint);
@@ -80,7 +82,11 @@ namespace tower.defense {
         void HandleTouch() {
             GameTile tile = board.GetTile(TouchRay);
             if (tile != null) {
-                board.ToggleWall(tile);
+                if (Input.GetKey(KeyCode.LeftShift)) {
+                    board.ToggleTower(tile);
+                } else {
+                    board.ToggleWall(tile);
+                }
             }
         }
 

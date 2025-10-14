@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using tower.defense;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,8 +11,8 @@ public class GameTileContentFactory : GameObjectFactory {
     [SerializeField] GameTileContent emptyPrefab;
     [SerializeField] GameTileContent wallPrefab;
     [SerializeField] GameTileContent spawnPointPrefab;
+    [SerializeField] Tower towerPrefab;
 
-    Scene contentScene;
 
     public void Reclaim(GameTileContent content) {
         Debug.Assert(content.OriginFactory == this, "Wrong factory reclaimed!");
@@ -25,7 +26,7 @@ public class GameTileContentFactory : GameObjectFactory {
         return instance;
     }
 
- 
+
 
     public GameTileContent Get(GameTileContentType type) {
         switch (type) {
@@ -33,6 +34,7 @@ public class GameTileContentFactory : GameObjectFactory {
             case GameTileContentType.Empty: return Get(emptyPrefab);
             case GameTileContentType.Wall: return Get(wallPrefab);
             case GameTileContentType.SpawnPoint: return Get(spawnPointPrefab);
+            case GameTileContentType.Tower: return Get(towerPrefab);
         }
         Debug.Assert(false, "Unsupport type:" + type);
         return null;

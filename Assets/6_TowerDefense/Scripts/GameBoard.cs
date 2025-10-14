@@ -11,12 +11,15 @@ public class GameBoard : MonoBehaviour {
 
     [SerializeField] Texture2D gridTexture;
 
+    [SerializeField] LayerMask tileMask = default;
+
     Vector2Int size;
 
     GameTile[] tiles;
     Queue<GameTile> searchFrontier = new Queue<GameTile>();
     GameTileContentFactory contentFactory;
     List<GameTile> spawnPoints = new List<GameTile>();
+    List<GameTileContent> updatingContent = new List<GameTileContent>();
 
 
     bool showGrid, showPaths;
@@ -138,7 +141,7 @@ public class GameBoard : MonoBehaviour {
 
     public GameTile GetTile(Ray ray) {
 
-        if (Physics.Raycast(ray, out RaycastHit hit)) {
+        if (Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, tileMask)) {
             int x = (int)(hit.point.x + size.x * 0.5f);
             int y = (int)(hit.point.z + size.y * 0.5f);
             if (x >= 0 && x < size.x && y >= 0 && y < size.y) {
@@ -159,7 +162,7 @@ public class GameBoard : MonoBehaviour {
                 FindPaths();
             }
 
-        } else {
+        } else if (tile.Content.Type == GameTileContentType.Empty) {
             tile.Content = contentFactory.Get(GameTileContentType.Destination);
             FindPaths();
         }
@@ -191,10 +194,35 @@ public class GameBoard : MonoBehaviour {
         }
     }
 
+    public void ToggleTower(GameTile tile) {
+        if (tile.Content.Type == GameTileContentType.Tower) {
+            updatingContent.Remove(tile.Content); ;
+            tile.Content = contentFactory.Get(GameTileContentType.Empty);
+            FindPaths();
+        } else if (tile.Content.Type == GameTileContentType.Empty) {
+            tile.Content = contentFactory.Get(GameTileContentType.Tower);
+            if (FindPaths()) {
+                updatingContent.Add(tile.Content);
+            } else {
+                tile.Content = contentFactory.Get(GameTileContentType.Empty);
+                FindPaths();
+            }
+        } else if (tile.Content.Type == GameTileContentType.Wall) {
+            tile.Content = contentFactory.Get(GameTileContentType.Tower);
+            updatingContent.Add(tile.Content);
+        }
+    }
+
     public GameTile GetSpawnPoint(int index) {
         return spawnPoints[index];
     }
     public int SpawnPointCount => spawnPoints.Count;
 
+
+    public void GameUpdate() {
+        for (int i = 0; i < updatingContent.Count; i++) {
+            updatingContent[i].GameUpdate();
+        }
+    }
 
 }

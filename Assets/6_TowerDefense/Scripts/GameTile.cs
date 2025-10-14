@@ -48,7 +48,6 @@ public class GameTile : MonoBehaviour {
 
     public bool HasPath => distance != int.MaxValue;
 
-
     GameTile GrowPathTo(GameTile neighbor, Direction direction) {
         Debug.Assert(HasPath, "No Path");
         if (neighbor == null || neighbor.HasPath) {
@@ -58,7 +57,7 @@ public class GameTile : MonoBehaviour {
         neighbor.nextOnPath = this;
         neighbor.ExitPoint = neighbor.transform.localPosition + direction.GetHalfVector();
         neighbor.PathDirection = direction;
-        return neighbor.Content.Type != GameTileContentType.Wall ? neighbor : null;
+        return neighbor.Content.BlocksPath ? null : neighbor;
     }
 
     public GameTile GrowPathNorth() => GrowPathTo(north, Direction.South);

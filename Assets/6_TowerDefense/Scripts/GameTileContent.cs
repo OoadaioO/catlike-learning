@@ -1,10 +1,13 @@
 using UnityEngine;
 
+[SelectionBase]
 public class GameTileContent : MonoBehaviour {
     [SerializeField] GameTileContentType type;
 
     public GameTileContentType Type => type;
 
+    public bool BlocksPath =>
+        Type == GameTileContentType.Wall || Type == GameTileContentType.Tower;
 
     GameTileContentFactory originFactory;
 
@@ -19,4 +22,6 @@ public class GameTileContent : MonoBehaviour {
     public void Recycle() {
         originFactory.Reclaim(this);
     }
+
+    public virtual void GameUpdate(){}
 }
