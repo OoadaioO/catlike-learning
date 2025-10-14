@@ -9,6 +9,12 @@ namespace tower.defense {
         [SerializeField] Vector2Int boardSize = new Vector2Int(11, 11);
         [SerializeField] GameBoard board;
         [SerializeField] GameTileContentFactory tileContentFactory;
+        [SerializeField] EnemyFactory enemyFactory;
+        [SerializeField, Range(0.1f, 10f)] float spawnSpeed = 1f;
+
+        float spawnProgress;
+
+        EnemyCollection enemies = new EnemyCollection();
 
         Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
 
@@ -34,13 +40,28 @@ namespace tower.defense {
                 HandleAlternativeTouch();
             }
 
-            if(Input.GetKeyDown(KeyCode.V)){
+            if (Input.GetKeyDown(KeyCode.V)) {
                 board.ShowPaths = !board.ShowPaths;
             }
 
-            if(Input.GetKeyDown(KeyCode.G)){
+            if (Input.GetKeyDown(KeyCode.G)) {
                 board.ShowGrid = !board.ShowGrid;
             }
+
+            spawnProgress += spawnSpeed * Time.deltaTime;
+            while(spawnProgress >= 1f){
+                spawnProgress -= 1f;
+                SpawnEnemy();
+            }
+
+            enemies.GameUpdate();
+        }
+
+        void SpawnEnemy(){
+            GameTile spawnPoint = board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
+            Enemy enemy = enemyFactory.Get();
+            enemy.SpawnOn(spawnPoint);
+            enemies.Add(enemy);
         }
 
 
@@ -48,7 +69,11 @@ namespace tower.defense {
         void HandleAlternativeTouch() {
             GameTile tile = board.GetTile(TouchRay);
             if (tile != null) {
-                board.ToggleDestination(tile);
+                if (Input.GetKey(KeyCode.LeftShift)) {
+                    board.ToggleDestination(tile);
+                } else {
+                    board.ToggleSpawnPoint(tile);
+                }
             }
         }
 

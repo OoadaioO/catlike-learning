@@ -1,4 +1,5 @@
 using UnityEngine;
+using runner;
 
 public class Runner : MonoBehaviour {
     [SerializeField] private Light pointLight;

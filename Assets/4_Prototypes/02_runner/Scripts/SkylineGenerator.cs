@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using runner;
 
 public class SkylineGenerator : MonoBehaviour {
     const float boarder = 10f;

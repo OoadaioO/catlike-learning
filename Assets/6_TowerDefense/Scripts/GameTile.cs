@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class GameTile : MonoBehaviour {
 
-    public bool IsAlternative { get; set; }
 
     [SerializeField]
     Transform arrow = default;
@@ -13,25 +12,6 @@ public class GameTile : MonoBehaviour {
     GameTile north, east, south, west, nextOnPath;
 
     int distance;
-
-
-    static Quaternion northRotation = Quaternion.Euler(90f, 0f, 0f),
-        eastRotation = Quaternion.Euler(90f, 90f, 0f),
-        southRotation = Quaternion.Euler(90f, 180f, 0f),
-        westRotation = Quaternion.Euler(90f, 270f, 0f);
-
-    public static void MakeEastWestNeighbours(GameTile east, GameTile west) {
-        Debug.Assert(west.east == null && east.west == null, "Redefined Neighbors");
-        west.east = east;
-        east.west = west;
-    }
-
-    public static void MakeNorthSouthNeighbours(GameTile north, GameTile south) {
-        Debug.Assert(north.south == null && south.north == null, "Redefined Neighbors");
-        north.south = south;
-        south.north = north;
-    }
-
 
     GameTileContent content;
 
@@ -47,6 +27,14 @@ public class GameTile : MonoBehaviour {
         }
     }
 
+    public bool IsAlternative { get; set; }
+
+    public Vector3 ExitPoint { get; private set; }
+    public Direction PathDirection { get; private set; }
+
+    public GameTile NextTileOnPath => nextOnPath;
+
+
     public void ClearPath() {
         distance = int.MaxValue;
         nextOnPath = null;
@@ -55,25 +43,28 @@ public class GameTile : MonoBehaviour {
     public void BecomeDestination() {
         distance = 0;
         nextOnPath = null;
+        ExitPoint = transform.localPosition;
     }
 
     public bool HasPath => distance != int.MaxValue;
 
 
-    GameTile GrowPathTo(GameTile neighbor) {
+    GameTile GrowPathTo(GameTile neighbor, Direction direction) {
         Debug.Assert(HasPath, "No Path");
         if (neighbor == null || neighbor.HasPath) {
             return null;
         }
         neighbor.distance = neighbor.distance + 1;
         neighbor.nextOnPath = this;
+        neighbor.ExitPoint = neighbor.transform.localPosition + direction.GetHalfVector();
+        neighbor.PathDirection = direction;
         return neighbor.Content.Type != GameTileContentType.Wall ? neighbor : null;
     }
 
-    public GameTile GrowPathNorth() => GrowPathTo(north);
-    public GameTile GrowPathEast() => GrowPathTo(east);
-    public GameTile GrowPathSouth() => GrowPathTo(south);
-    public GameTile GrowPathWest() => GrowPathTo(west);
+    public GameTile GrowPathNorth() => GrowPathTo(north, Direction.South);
+    public GameTile GrowPathEast() => GrowPathTo(east, Direction.West);
+    public GameTile GrowPathSouth() => GrowPathTo(south, Direction.North);
+    public GameTile GrowPathWest() => GrowPathTo(west, Direction.East);
 
     public void ShowPath() {
         if (distance == 0) {
@@ -91,5 +82,24 @@ public class GameTile : MonoBehaviour {
 
     public void HidePath() {
         arrow.gameObject.SetActive(false);
+    }
+
+
+
+    static Quaternion northRotation = Quaternion.Euler(90f, 0f, 0f),
+     eastRotation = Quaternion.Euler(90f, 90f, 0f),
+     southRotation = Quaternion.Euler(90f, 180f, 0f),
+     westRotation = Quaternion.Euler(90f, 270f, 0f);
+
+    public static void MakeEastWestNeighbours(GameTile east, GameTile west) {
+        Debug.Assert(west.east == null && east.west == null, "Redefined Neighbors");
+        west.east = east;
+        east.west = west;
+    }
+
+    public static void MakeNorthSouthNeighbours(GameTile north, GameTile south) {
+        Debug.Assert(north.south == null && south.north == null, "Redefined Neighbors");
+        north.south = south;
+        south.north = north;
     }
 }

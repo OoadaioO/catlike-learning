@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: GameTileContentFacgtory
   m_EditorClassIdentifier: 
   destinationPrefab: {fileID: 3067683389173156968, guid: 66cd979b4ea0d44e190ba2aa2d9b1f77, type: 3}
-  emptyPrefab: {fileID: 5002835118324816911, guid: 7ba6189ae083e4bd99ba8758b540618f, type: 3}
+  emptyPrefab: {fileID: 5365812330707806311, guid: 7ba6189ae083e4bd99ba8758b540618f, type: 3}
   wallPrefab: {fileID: 1743792938129557038, guid: 1a63f5ea3293c4d0485471a552af3c1b, type: 3}
+  spawnPointPrefab: {fileID: 1197161807339848818, guid: 910e19007dbfd44e1b275430db7dc9c5, type: 3}
