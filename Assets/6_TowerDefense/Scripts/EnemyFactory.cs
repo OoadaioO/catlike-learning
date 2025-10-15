@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using tower.defense;
 using UnityEngine;
 
@@ -7,21 +5,52 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "tower/Create Enemy Factory", fileName = "EnemyFactory")]
 public class EnemyFactory : GameObjectFactory {
 
-    [SerializeField] Enemy enemyPrefab;
-    
-    [SerializeField, FloatRangeSlider(0.5f, 2f)] 
-    FloatRange scale = new(1f);
+    [System.Serializable]
+    class EnemyConfig {
+        [SerializeField]
+        public Enemy enemyPrefab;
 
-    [SerializeField, FloatRangeSlider(0.2f, 5f)]
-    FloatRange speed = new FloatRange(1f);
+        [FloatRangeSlider(0.5f, 2f)]
+        public FloatRange scale = new(1f);
 
-    [SerializeField, FloatRangeSlider(-0.4f, 0.4f)]
-    FloatRange pathOffset = new FloatRange(0f);
+        [FloatRangeSlider(0.2f, 5f)]
+        public FloatRange speed = new FloatRange(1f);
+
+        [FloatRangeSlider(-0.4f, 0.4f)]
+        public FloatRange pathOffset = new FloatRange(0f);
+
+        [FloatRangeSlider(10f, 1000f)]
+        public FloatRange health = new FloatRange(100f);
+
+    }
+
+    [SerializeField]
+    EnemyConfig small = default, medium = default, large = default;
 
 
-    public Enemy Get() {
-        Enemy instance = CreateGameObjectInstance(enemyPrefab);
-        instance.Initialize(scale.RandomValueInRange,speed.RandomValueInRange,pathOffset.RandomValueInRange);
+
+    EnemyConfig GetConfig(EnemyType type) {
+        switch (type) {
+            case EnemyType.Small: return small;
+            case EnemyType.Medium: return medium;
+            case EnemyType.Large: return large;
+        }
+        Debug.Assert(false, "Unsupported enemy type!");
+        return null;
+    }
+
+
+    public Enemy Get(EnemyType type = EnemyType.Medium) {
+        EnemyConfig config = GetConfig(type);
+        Enemy instance = CreateGameObjectInstance(config.enemyPrefab);
+        
+        instance.Initialize(
+            config.scale.RandomValueInRange,
+            config.speed.RandomValueInRange,
+            config.pathOffset.RandomValueInRange,
+            config.health.RandomValueInRange
+        );
+
         instance.OriginFactory = this;
         return instance;
     }

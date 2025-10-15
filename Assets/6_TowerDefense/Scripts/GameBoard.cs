@@ -84,10 +84,18 @@ public class GameBoard : MonoBehaviour {
                     tile.IsAlternative = !tile.IsAlternative;
                 }
 
-                tile.Content = contentFactory.Get(GameTileContentType.Empty);
             }
         }
 
+        Clear();
+    }
+
+    public void Clear() {
+        foreach (GameTile tile in tiles) {
+            tile.Content = contentFactory.Get(GameTileContentType.Empty);
+        }
+        spawnPoints.Clear();
+        updatingContent.Clear();
         ToggleDestination(tiles[tiles.Length / 2]);
         ToggleSpawnPoint(tiles[0]);
     }
@@ -195,13 +203,13 @@ public class GameBoard : MonoBehaviour {
         }
     }
 
-    public void ToggleTower(GameTile tile,TowerType towerType) {
+    public void ToggleTower(GameTile tile, TowerType towerType) {
         if (tile.Content.Type == GameTileContentType.Tower) {
             updatingContent.Remove(tile.Content);
-            if(((Tower)tile.Content).TowerType == towerType){
+            if (((Tower)tile.Content).TowerType == towerType) {
                 tile.Content = contentFactory.Get(GameTileContentType.Empty);
                 FindPaths();
-            }else{
+            } else {
                 tile.Content = contentFactory.Get(towerType);
                 updatingContent.Add(tile.Content);
             }

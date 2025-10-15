@@ -7,11 +7,16 @@ indent_style = space
 [*.cs]
 charset = utf-8
 tab_width = 4
+indent_size = 4  # 确保与tab_width一致
+
+# 控制大括号位置
+csharp_new_line_before_open_brace = none  # 保持if/else等与大括号同行
+csharp_new_line_before_open_brace_array_initializer = false  # 数组初始化的大括号另起一行
+csharp_new_line_after_open_brace = true   # 左大括号后换行
 
 # if(...){
 #   ...	
 #}
-csharp_new_line_before_open_brace = none
 csharp_new_line_before_else = false
 csharp_new_line_before_catch = false
 csharp_new_line_before_finally = false

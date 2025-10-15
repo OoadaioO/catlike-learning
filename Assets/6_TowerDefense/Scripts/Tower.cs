@@ -5,7 +5,6 @@ using UnityEngine;
 namespace tower.defense {
     public abstract class Tower : GameTileContent {
 
-        static Collider[] targetsBuffer = new Collider[100];
 
 
         [SerializeField, Range(1.5f, 10.5f)]

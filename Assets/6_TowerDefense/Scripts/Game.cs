@@ -6,47 +6,40 @@ namespace tower.defense {
 
     public class Game : MonoBehaviour {
 
-        [SerializeField] Vector2Int boardSize = new Vector2Int(11, 11);
-        [SerializeField] GameBoard board;
-        [SerializeField] GameTileContentFactory tileContentFactory;
-        [SerializeField] EnemyFactory enemyFactory;
-        [SerializeField] WarFactory warFactory;
-        [SerializeField, Range(0.1f, 10f)] float spawnSpeed = 1f;
-        [SerializeField] LayerMask enemyLayerMask = 1 << 8;
-
-
-        float spawnProgress;
-
-        TowerType selectTowerType;
-
-        GameBehaviorCollection enemies = new GameBehaviorCollection();
-        GameBehaviorCollection nonEnemies = new GameBehaviorCollection();
-
-        Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
+        const float pausedTimeScale = 0f;
 
         static Game instance;
 
-        public static Shell SpawnShell() {
-            Shell shell = instance.warFactory.Shell;
-            instance.nonEnemies.Add(shell);
-            return shell;
-        }
+        [SerializeField] Vector2Int boardSize = new Vector2Int(11, 11);
+        [SerializeField, Range(0, 100)] int startingPlayerHealth = 10;
+        [SerializeField] GameBoard board;
+        [SerializeField] GameTileContentFactory tileContentFactory;
+        [SerializeField] WarFactory warFactory;
+        [SerializeField] GameScenario scenario = default;
+        [SerializeField] LayerMask enemyLayerMask = 1 << 8;
+        [SerializeField, Range(1f, 10f)] float playSpeed = 1f;
 
-        public static Explosion SpawnExplosion() {
-            Explosion explosion = instance.warFactory.Explosion;
-            instance.nonEnemies.Add(explosion);
-            return explosion;
+
+        int playerHealth;
+        TowerType selectTowerType;
+        GameScenario.State activeScenario;
+        GameBehaviorCollection enemies = new GameBehaviorCollection();
+        GameBehaviorCollection nonEnemies = new GameBehaviorCollection();
+
+
+        Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
+
+
+        private void Awake() {
+            playerHealth = startingPlayerHealth;
+            board.Initialize(boardSize, tileContentFactory);
+            board.ShowGrid = true;
+            activeScenario = scenario.Begin();
         }
 
         private void OnEnable() {
             TargetPoint.SetEnemyLayerMask(enemyLayerMask);
             instance = this;
-        }
-
-
-        private void Awake() {
-            board.Initialize(boardSize, tileContentFactory);
-            board.ShowGrid = true;
         }
 
 
@@ -61,6 +54,13 @@ namespace tower.defense {
 
 
         private void Update() {
+
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                Time.timeScale = Time.timeScale > pausedTimeScale ? pausedTimeScale : playSpeed;
+            } else if (Time.timeScale > pausedTimeScale) {
+                Time.timeScale = playSpeed;
+            }
+
             if (Input.GetMouseButtonDown(0)) {
                 HandleTouch();
             } else if (Input.GetMouseButtonDown(1)) {
@@ -83,10 +83,19 @@ namespace tower.defense {
                 selectTowerType = TowerType.Mortar;
             }
 
-            spawnProgress += spawnSpeed * Time.deltaTime;
-            while (spawnProgress >= 1f) {
-                spawnProgress -= 1f;
-                SpawnEnemy();
+            if (Input.GetKeyDown(KeyCode.B)) {
+                BeginNewGame();
+            }
+
+            if (playerHealth <= 0 && startingPlayerHealth > 0) {
+                Debug.Log("Defeat!");
+                BeginNewGame();
+            }
+
+            if (!activeScenario.Progress() && enemies.IsEmpty) {
+                Debug.Log("Victory!");
+                BeginNewGame();
+                activeScenario.Progress();
             }
 
             enemies.GameUpdate();
@@ -95,11 +104,29 @@ namespace tower.defense {
             nonEnemies.GameUpdate();
         }
 
-        void SpawnEnemy() {
-            GameTile spawnPoint = board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
-            Enemy enemy = enemyFactory.Get();
+
+
+        public static Shell SpawnShell() {
+            Shell shell = instance.warFactory.Shell;
+            instance.nonEnemies.Add(shell);
+            return shell;
+        }
+
+        public static Explosion SpawnExplosion() {
+            Explosion explosion = instance.warFactory.Explosion;
+            instance.nonEnemies.Add(explosion);
+            return explosion;
+        }
+
+        public static void SpawnEnemy(EnemyFactory factory, EnemyType type) {
+            GameTile spawnPoint = instance.board.GetSpawnPoint(Random.Range(0, instance.board.SpawnPointCount));
+            Enemy enemy = factory.Get(type);
             enemy.SpawnOn(spawnPoint);
-            enemies.Add(enemy);
+            instance.enemies.Add(enemy);
+        }
+
+        public static void EnemyReachedDestination() {
+            instance.playerHealth -= 1;
         }
 
 
@@ -124,6 +151,14 @@ namespace tower.defense {
                     board.ToggleWall(tile);
                 }
             }
+        }
+
+        void BeginNewGame() {
+            playerHealth = startingPlayerHealth;
+            enemies.Clear();
+            nonEnemies.Clear();
+            board.Clear();
+            activeScenario = scenario.Begin();
         }
 
     }

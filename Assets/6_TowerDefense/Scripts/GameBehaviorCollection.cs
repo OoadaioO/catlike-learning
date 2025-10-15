@@ -6,6 +6,8 @@ namespace tower.defense {
     public class GameBehaviorCollection {
         List<GameBehavior> behaviors = new List<GameBehavior>();
 
+        public bool IsEmpty => behaviors.Count == 0;
+
         public void Add(GameBehavior behavior) {
             behaviors.Add(behavior);
         }
@@ -20,6 +22,15 @@ namespace tower.defense {
                 }
             }
         }
+
+        public void Clear() {
+            for (int i = 0; i < behaviors.Count; i++) {
+                behaviors[i].Recycle();
+            }
+            behaviors.Clear();
+        }
+
+
 
     }
 }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3038184185119446026}
   - component: {fileID: 6999432302191297843}
   m_Layer: 8
-  m_Name: Enemy
+  m_Name: EnemyCubeMedium
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -206,7 +206,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 19e0733d74e354accae1e5c3fd1d4c6d, type: 2}
+  - {fileID: 2100000, guid: 512bbf92dae8c4256bf7bac031d63f17, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

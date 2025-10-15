@@ -39,7 +39,7 @@ namespace tower.defense {
 
         public static TargetPoint GetBufferd(int index) {
             TargetPoint target = buffer[index].GetComponent<TargetPoint>();
-            Debug.Assert(target != null, "Target non-enemy!", buffer[0]);
+            Debug.Assert(target != null, "Target non-enemy!:"+buffer[index], buffer[index]);
             return target;
         }
 
