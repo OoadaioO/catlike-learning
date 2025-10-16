@@ -1,9 +1,13 @@
 using tower.defense;
+using Unity.VisualScripting;
 using UnityEngine;
 namespace tower.defense {
     public class Enemy : GameBehavior {
 
         [SerializeField] Transform model;
+        [SerializeField] EnemyAnimationConfig animationConfig;
+
+        EnemyAnimator animator;
 
         EnemyFactory originFactory;
 
@@ -18,10 +22,31 @@ namespace tower.defense {
         float pathOffset;
         float speed;
 
+        Collider targetPointCollider;
+        public Collider TargetPointCollider {
+            get => targetPointCollider;
+            set {
+                Debug.Assert(targetPointCollider == null, "Redefined collider!");
+                targetPointCollider = value;
+            }
+        }
+
         public float Scale { get; private set; }
         public float Health { get; private set; }
 
+        public bool IsValidTarget => animator.CurrentClip == EnemyAnimator.Clip.Move;
 
+
+        private void Awake() {
+            animator.Configure(
+                model.GetChild(0).gameObject.AddComponent<Animator>(),
+                animationConfig
+            );
+        }
+
+        private void OnDestroy() {
+            animator.Destory();
+        }
 
         public void Initialize(float scale, float speed, float pathOffset, float health) {
             Scale = scale;
@@ -29,6 +54,8 @@ namespace tower.defense {
             this.speed = speed;
             this.pathOffset = pathOffset;
             Health = health;
+            animator.PlayIntro();
+            targetPointCollider.enabled = false;
         }
 
         public EnemyFactory OriginFactory {
@@ -50,18 +77,35 @@ namespace tower.defense {
 
 
         public override bool GameUpdate() {
+            animator.GameUpdate();
 
-            if (Health < 1f) {
-                Recycle();
-                return false;
+            if (animator.CurrentClip == EnemyAnimator.Clip.Intro) {
+                if (!animator.IsDone) {
+                    return true;
+                }
+                animator.PlayMove(animationConfig.MovingAnimationSpeed * speed / Scale);
+                targetPointCollider.enabled = true;
+            } else if (animator.CurrentClip >= EnemyAnimator.Clip.Outro) {
+                if (animator.IsDone) {
+                    Recycle();
+                    return false;
+                }
+                return true;
+            }
+
+            if (Health <= 0f) {
+                animator.PlayDying();
+                targetPointCollider.enabled = false;
+                return true;
             }
 
             progress += Time.deltaTime * progressFactor;
             while (progress >= 1f) {
                 if (tileTo == null) {
                     Game.EnemyReachedDestination();
-                    Recycle();
-                    return false;
+                    animator.PlayOutro();
+                    targetPointCollider.enabled = false;
+                    return true;
                 }
                 // 时间标准化成插值百分比
                 progress = (progress - 1f) / progressFactor;
@@ -131,6 +175,7 @@ namespace tower.defense {
 
         void PrepareIntro() {
             positionFrom = tileFrom.transform.localPosition;
+            transform.position = positionFrom;
             positionTo = tileFrom.ExitPoint;
 
             direction = tileFrom.PathDirection;
@@ -162,9 +207,14 @@ namespace tower.defense {
 
         }
 
+
         public override void Recycle() {
+            animator.Stop();
             OriginFactory.Reclaim(this);
         }
+
+
+
 
     }
 }

@@ -13,6 +13,8 @@ namespace tower.defense {
             Enemy = transform.root.GetComponent<Enemy>();
             Debug.Assert(Enemy != null, "Target Point Without Enemy root!", this);
             Debug.Assert(GetComponent<SphereCollider>() != null, "Target Point Without sphere collider", this);
+
+            Enemy.TargetPointCollider = GetComponent<Collider>();
         }
 
 

@@ -30,7 +30,7 @@ namespace tower.defense {
         }
 
         protected bool TrackTarget(ref TargetPoint target) {
-            if (target == null) {
+            if (target == null || !target.Enemy.IsValidTarget) {
                 return false;
             }
             Vector3 a = transform.position;
