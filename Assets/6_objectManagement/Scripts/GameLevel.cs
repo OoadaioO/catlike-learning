@@ -3,6 +3,8 @@ using UnityEngine;
 namespace obj.mamagement {
     public class GameLevel : MonoBehaviour {
 
+        public static GameLevel Current { get; private set; }
+
         [SerializeField]
         SpawnZone spawnZone;
 
@@ -10,5 +12,8 @@ namespace obj.mamagement {
             Game.Instance.SpawnZoneOfLevel = spawnZone;
         }
 
+        private void OnEnable() {
+            Current = this;
+        }
     }
 }

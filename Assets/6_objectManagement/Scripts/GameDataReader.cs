@@ -44,4 +44,8 @@ public class GameDataReader {
         c.a = reader.ReadSingle();
         return c;
     }
+
+    public Random.State ReadRandomState(){
+        return JsonUtility.FromJson<Random.State>(reader.ReadString());
+    }
 }

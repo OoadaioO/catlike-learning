@@ -35,5 +35,9 @@ namespace obj.mamagement {
             writer.Write(color.b);
             writer.Write(color.a);
         }
+
+        public void Write(Random.State value){
+            writer.Write(JsonUtility.ToJson(value));
+        }
     }
 }

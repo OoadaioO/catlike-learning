@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace obj.mamagement {
     public class Game : PersistableObject {
 
-        const int saveVersion = 3;
+        const int saveVersion = 4;
 
         public static Game Instance { get; private set; }
 
@@ -38,6 +39,9 @@ namespace obj.mamagement {
         [SerializeField]
         int levelCount;
 
+        [SerializeField]
+        bool reseedOnLoad;
+
         public SpawnZone SpawnZoneOfLevel { get; set; }
 
 
@@ -47,13 +51,15 @@ namespace obj.mamagement {
 
         int loadedLevelBuildIndex;
 
+        Random.State mainRandomState;
+
 
         private void Start() {
 
+            mainRandomState = Random.state;
             shapes = new List<Shape>();
 
             if (Application.isEditor) {
-
                 for (int i = 0; i < SceneManager.sceneCount; i++) {
                     Scene loadedLevel = SceneManager.GetSceneAt(i);
                     if (loadedLevel.name.Contains("object-level")) {
@@ -64,7 +70,7 @@ namespace obj.mamagement {
                 }
 
             }
-
+            BeginNewGame();
             StartCoroutine(LoadLevel(1));
         }
 
@@ -143,6 +149,12 @@ namespace obj.mamagement {
         }
 
         void BeginNewGame() {
+            Random.state = mainRandomState;
+            int seed = Random.Range(0, int.MaxValue);
+            mainRandomState = Random.state;
+            Random.InitState(seed);
+
+
             for (int i = 0; i < shapes.Count; i++) {
                 shapeFactory.Reclaim(shapes[i]);
             }
@@ -163,6 +175,7 @@ namespace obj.mamagement {
 
         public override void Save(GameDataWriter writer) {
             writer.Write(shapes.Count);
+            writer.Write(Random.state);
             writer.Write(loadedLevelBuildIndex);
             for (int i = 0; i < shapes.Count; i++) {
                 writer.Write(shapes[i].ShapeId);
@@ -177,7 +190,16 @@ namespace obj.mamagement {
                 Debug.LogError("Unsupported fureture save version " + version);
                 return;
             }
+           
             int count = version <= 0 ? -version : reader.ReadInt();
+            
+            if(version >= 4){
+                Random.State state = reader.ReadRandomState();
+                if(!reseedOnLoad){
+                    Random.state = state;
+                }
+            }
+
             StartCoroutine(LoadLevel(version < 3 ? 1 : reader.ReadInt()));
             for (int i = 0; i < count; i++) {
                 int shapeId = version > 0 ? reader.ReadInt() : 0;

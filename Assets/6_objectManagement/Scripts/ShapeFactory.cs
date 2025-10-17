@@ -78,6 +78,7 @@ namespace obj.mamagement {
                 pools[i] = new List<Shape>();
             }
 
+            
             if (Application.isEditor) {
                 poolScene = SceneManager.GetSceneByName(name);
                 if (poolScene.isLoaded) {
