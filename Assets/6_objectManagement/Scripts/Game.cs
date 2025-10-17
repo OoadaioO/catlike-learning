@@ -8,22 +8,37 @@ namespace obj.mamagement {
 
         const int saveVersion = 3;
 
+        public static Game Instance { get; private set; }
 
         public float CreationSpeed { get; set; }
         public float DestructionSpeed { get; set; }
 
 
-        public PersistentStorage storage;
-        public ShapeFactory shapeFactory;
+        [SerializeField]
+        PersistentStorage storage;
 
+        [SerializeField]
+        ShapeFactory shapeFactory;
 
-        public KeyCode createKey = KeyCode.C;
-        public KeyCode newGameKey = KeyCode.N;
-        public KeyCode saveKey = KeyCode.S;
-        public KeyCode loadKey = KeyCode.L;
-        public KeyCode destroyKey = KeyCode.X;
+        [SerializeField]
+        KeyCode createKey = KeyCode.C;
+        
+        [SerializeField]
+        KeyCode newGameKey = KeyCode.N;
+        
+        [SerializeField]
+        KeyCode saveKey = KeyCode.S;
+        
+        [SerializeField]
+        KeyCode loadKey = KeyCode.L;
+        
+        [SerializeField]
+        KeyCode destroyKey = KeyCode.X;
 
-        public int levelCount;
+        [SerializeField]
+        int levelCount;
+
+        public SpawnZone SpawnZoneOfLevel { get; set; }
 
 
         List<Shape> shapes;
@@ -34,6 +49,7 @@ namespace obj.mamagement {
 
 
         private void Start() {
+
             shapes = new List<Shape>();
 
             if (Application.isEditor) {
@@ -50,6 +66,10 @@ namespace obj.mamagement {
             }
 
             StartCoroutine(LoadLevel(1));
+        }
+
+        private void OnEnable() {
+            Instance = this;
         }
 
         private void Update() {
@@ -108,8 +128,8 @@ namespace obj.mamagement {
         void CreateShape() {
             Shape instance = shapeFactory.GetRandom();
             Transform t = instance.transform;
-            t.position = Random.insideUnitSphere * 5f;
-            t.rotation = Random.rotation;
+            t.localPosition = SpawnZoneOfLevel.SpawnPoint;
+            t.localRotation = Random.rotation;
             t.localScale = Vector3.one * Random.Range(0.1f, 1f);
             instance.SetColor(Random.ColorHSV(
                     hueMin: 0f,
