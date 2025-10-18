@@ -1,15 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace obj.mamagement {
     public class Game : PersistableObject {
 
-        const int saveVersion = 4;
-
-        public static Game Instance { get; private set; }
+        const int saveVersion = 5;
 
         public float CreationSpeed { get; set; }
         public float DestructionSpeed { get; set; }
@@ -23,16 +21,16 @@ namespace obj.mamagement {
 
         [SerializeField]
         KeyCode createKey = KeyCode.C;
-        
+
         [SerializeField]
         KeyCode newGameKey = KeyCode.N;
-        
+
         [SerializeField]
         KeyCode saveKey = KeyCode.S;
-        
+
         [SerializeField]
         KeyCode loadKey = KeyCode.L;
-        
+
         [SerializeField]
         KeyCode destroyKey = KeyCode.X;
 
@@ -42,7 +40,9 @@ namespace obj.mamagement {
         [SerializeField]
         bool reseedOnLoad;
 
-        public SpawnZone SpawnZoneOfLevel { get; set; }
+        [SerializeField] Slider creationSpeedSlider;
+        [SerializeField] Slider destructionSpeedSlider;
+
 
 
         List<Shape> shapes;
@@ -74,15 +74,13 @@ namespace obj.mamagement {
             StartCoroutine(LoadLevel(1));
         }
 
-        private void OnEnable() {
-            Instance = this;
-        }
 
         private void Update() {
             if (Input.GetKeyDown(createKey)) {
                 CreateShape();
             } else if (Input.GetKeyDown(newGameKey)) {
                 BeginNewGame();
+                StartCoroutine(LoadLevel(loadedLevelBuildIndex));
             } else if (Input.GetKeyDown(saveKey)) {
                 storage.Save(this, saveVersion);
             } else if (Input.GetKeyDown(loadKey)) {
@@ -98,6 +96,15 @@ namespace obj.mamagement {
                     }
                 }
             }
+
+
+        }
+
+        private void FixedUpdate() {
+            for (int i = 0; i < shapes.Count; i++) {
+                shapes[i].GameUpdate();
+            }
+
 
             creationProgress += Time.deltaTime * CreationSpeed;
 
@@ -133,18 +140,7 @@ namespace obj.mamagement {
 
         void CreateShape() {
             Shape instance = shapeFactory.GetRandom();
-            Transform t = instance.transform;
-            t.localPosition = SpawnZoneOfLevel.SpawnPoint;
-            t.localRotation = Random.rotation;
-            t.localScale = Vector3.one * Random.Range(0.1f, 1f);
-            instance.SetColor(Random.ColorHSV(
-                    hueMin: 0f,
-                    hueMax: 1f,
-                    saturationMin: 0.5f, saturationMax: 1f,
-                    valueMin: 0.25f, valueMax: 1f,
-                    alphaMin: 1f, alphaMax: 1f)
-            );
-
+            GameLevel.Current.ConfigureSpawn(instance);
             shapes.Add(instance);
         }
 
@@ -153,6 +149,9 @@ namespace obj.mamagement {
             int seed = Random.Range(0, int.MaxValue);
             mainRandomState = Random.state;
             Random.InitState(seed);
+
+            creationSpeedSlider.value = CreationSpeed = 0f;
+            destructionSpeedSlider.value = DestructionSpeed = 0f;
 
 
             for (int i = 0; i < shapes.Count; i++) {
@@ -176,7 +175,12 @@ namespace obj.mamagement {
         public override void Save(GameDataWriter writer) {
             writer.Write(shapes.Count);
             writer.Write(Random.state);
+            writer.Write(CreationSpeed);
+            writer.Write(creationProgress);
+            writer.Write(DestructionSpeed);
+            writer.Write(destructProgress);
             writer.Write(loadedLevelBuildIndex);
+            GameLevel.Current.Save(writer);
             for (int i = 0; i < shapes.Count; i++) {
                 writer.Write(shapes[i].ShapeId);
                 writer.Write(shapes[i].MaterialId);
@@ -190,17 +194,32 @@ namespace obj.mamagement {
                 Debug.LogError("Unsupported fureture save version " + version);
                 return;
             }
-           
+
+            StartCoroutine(LoadGame(reader));
+        }
+
+        IEnumerator LoadGame(GameDataReader reader) {
+
+            int version = reader.Version;
             int count = version <= 0 ? -version : reader.ReadInt();
-            
-            if(version >= 4){
+
+            if (version >= 4) {
                 Random.State state = reader.ReadRandomState();
-                if(!reseedOnLoad){
+                if (!reseedOnLoad) {
                     Random.state = state;
                 }
+
+                creationSpeedSlider.value = CreationSpeed = reader.ReadFloat();
+                creationProgress = reader.ReadFloat();
+                destructionSpeedSlider.value = DestructionSpeed = reader.ReadFloat();
+                destructProgress = reader.ReadFloat();
+            }
+            yield return LoadLevel(version < 3 ? 1 : reader.ReadInt());
+
+            if (version >= 4) {
+                GameLevel.Current.Load(reader);
             }
 
-            StartCoroutine(LoadLevel(version < 3 ? 1 : reader.ReadInt()));
             for (int i = 0; i < count; i++) {
                 int shapeId = version > 0 ? reader.ReadInt() : 0;
                 int materialId = version > 0 ? reader.ReadInt() : 0;

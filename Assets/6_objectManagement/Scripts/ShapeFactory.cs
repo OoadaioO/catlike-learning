@@ -8,6 +8,14 @@ namespace obj.mamagement {
     [CreateAssetMenu(menuName = "Object-Manager/Shape Factory", fileName = "Shape Factory")]
     public class ShapeFactory : ScriptableObject {
 
+#if UNITY_EDITOR
+        static bool reload;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void OnReload() {
+            reload = true;
+        }
+#endif
+
         [SerializeField]
         Shape[] prefabs;
 
@@ -21,13 +29,22 @@ namespace obj.mamagement {
 
         Scene poolScene;
 
+
+
         public Shape Get(int shapeId = 0, int materialId = 0) {
             Shape instance;
 
             if (recycle) {
+#if UNITY_EDITOR
+                if (reload || pools == null) {
+                    reload = false;
+                    CreatePools();
+                }
+#endif
                 if (pools == null) {
                     CreatePools();
                 }
+
                 List<Shape> pool = pools[shapeId];
                 int lastIndex = pool.Count - 1;
                 if (lastIndex >= 0) {
@@ -60,6 +77,12 @@ namespace obj.mamagement {
 
         public void Reclaim(Shape shapeToRecycle) {
             if (recycle) {
+#if UNITY_EDITOR
+                if (reload || pools == null) {
+                    reload = false;
+                    CreatePools();
+                }
+#endif
                 if (pools == null) {
                     CreatePools();
                 }
@@ -73,12 +96,12 @@ namespace obj.mamagement {
 
 
         void CreatePools() {
+
             pools = new List<Shape>[prefabs.Length];
             for (int i = 0; i < pools.Length; i++) {
                 pools[i] = new List<Shape>();
             }
 
-            
             if (Application.isEditor) {
                 poolScene = SceneManager.GetSceneByName(name);
                 if (poolScene.isLoaded) {
@@ -95,5 +118,6 @@ namespace obj.mamagement {
 
             poolScene = SceneManager.CreateScene(name);
         }
+
     }
 }
