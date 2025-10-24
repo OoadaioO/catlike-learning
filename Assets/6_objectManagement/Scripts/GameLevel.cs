@@ -19,8 +19,8 @@ namespace obj.mamagement {
             }
         }
 
-        public void ConfigureSpawn(Shape shape){
-            spawnZone.ConfigureSpawn(shape);
+        public Shape SpawnShape(){
+            return spawnZone.SpawnShape();
         }
 
 

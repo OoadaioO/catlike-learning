@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace obj.mamagement {
     public class Game : PersistableObject {
 
-        const int saveVersion = 5;
+        const int saveVersion = 6;
 
         public float CreationSpeed { get; set; }
         public float DestructionSpeed { get; set; }
@@ -139,9 +139,7 @@ namespace obj.mamagement {
         }
 
         void CreateShape() {
-            Shape instance = shapeFactory.GetRandom();
-            GameLevel.Current.ConfigureSpawn(instance);
-            shapes.Add(instance);
+            shapes.Add(GameLevel.Current.SpawnShape());
         }
 
         void BeginNewGame() {
@@ -155,7 +153,7 @@ namespace obj.mamagement {
 
 
             for (int i = 0; i < shapes.Count; i++) {
-                shapeFactory.Reclaim(shapes[i]);
+                shapes[i].Recycle();
             }
             shapes.Clear();
         }
@@ -163,7 +161,7 @@ namespace obj.mamagement {
         void DestroyShape() {
             if (shapes.Count > 0) {
                 int index = Random.Range(0, shapes.Count);
-                shapeFactory.Reclaim(shapes[index]);
+                shapes[index].Recycle();
                 int lastIndex = shapes.Count - 1;
                 shapes[index] = shapes[lastIndex];
                 shapes.RemoveAt(lastIndex);

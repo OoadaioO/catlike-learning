@@ -152,6 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnZone: {fileID: 1596840389}
+  persistableObjects: []
 --- !u!4 &110660225
 Transform:
   m_ObjectHideFlags: 0
@@ -329,6 +330,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94769f9db905b40cf8572e9bf3e6b7f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnConfig:
+    factories:
+    - {fileID: 11400000, guid: 2d943a3106ede4ebebf8cf640b4e77f5, type: 2}
+    - {fileID: 11400000, guid: c2e92aed45eb34686a94982873881fb6, type: 2}
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 0
+    angularSpeed:
+      min: 0
+      max: 0
+    scale:
+      min: 0
+      max: 0
+    color:
+      hue:
+        min: 0
+        max: 0
+      saturation:
+        min: 0
+        max: 0
+      value:
+        min: 0
+        max: 0
+    uniformColor: 0
   surfaceOnly: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

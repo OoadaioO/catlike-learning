@@ -212,6 +212,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f032eaff641e445c8b6e563b948de1d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnConfig:
+    factories:
+    - {fileID: 11400000, guid: c2e92aed45eb34686a94982873881fb6, type: 2}
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 0
+    angularSpeed:
+      min: 0
+      max: 0
+    scale:
+      min: 0
+      max: 0
+    color:
+      hue:
+        min: 0
+        max: 0
+      saturation:
+        min: 0
+        max: 0
+      value:
+        min: 0
+        max: 0
+    uniformColor: 0
   surfaceOnly: 0
 --- !u!1 &110660223
 GameObject:
@@ -306,6 +330,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f032eaff641e445c8b6e563b948de1d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnConfig:
+    factories:
+    - {fileID: 11400000, guid: 2d943a3106ede4ebebf8cf640b4e77f5, type: 2}
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 0
+    angularSpeed:
+      min: 0
+      max: 0
+    scale:
+      min: 0
+      max: 0
+    color:
+      hue:
+        min: 0
+        max: 0
+      saturation:
+        min: 0
+        max: 0
+      value:
+        min: 0
+        max: 0
+    uniformColor: 0
   surfaceOnly: 0
 --- !u!1 &1008894845
 GameObject:
@@ -353,10 +401,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fac2b946526514cbcbb5ce4a9057afa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnConfig:
+    factories:
+    - {fileID: 11400000, guid: c2e92aed45eb34686a94982873881fb6, type: 2}
+    spawnMovementDirection: 0
+    spawnSpeed:
+      min: 0
+      max: 0
+    angularSpeed:
+      min: 0
+      max: 0
+    scale:
+      min: 0
+      max: 0
+    color:
+      hue:
+        min: 0
+        max: 0
+      saturation:
+        min: 0
+        max: 0
+      value:
+        min: 0
+        max: 0
+    uniformColor: 0
   spawnZones:
   - {fileID: 320143782}
   - {fileID: 106078197}
   sequential: 1
+  overrideConfig: 0
 --- !u!1 &1264133110
 GameObject:
   m_ObjectHideFlags: 0

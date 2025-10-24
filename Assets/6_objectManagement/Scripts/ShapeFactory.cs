@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -54,12 +52,14 @@ namespace obj.mamagement {
                 } else {
                     instance = Instantiate(prefabs[shapeId]);
                     instance.ShapeId = shapeId;
+                    instance.OriginalFactory = this;
                     SceneManager.MoveGameObjectToScene(instance.gameObject, poolScene);
                 }
 
             } else {
                 instance = Instantiate(prefabs[shapeId]);
                 instance.ShapeId = shapeId;
+                instance.OriginalFactory = this;
                 SceneManager.MoveGameObjectToScene(instance.gameObject, poolScene);
             }
 
@@ -76,6 +76,10 @@ namespace obj.mamagement {
         }
 
         public void Reclaim(Shape shapeToRecycle) {
+            if(shapeToRecycle.OriginalFactory != this){
+                Debug.LogError("Tried to reclaim shape with wrong factory");
+                return;
+            }
             if (recycle) {
 #if UNITY_EDITOR
                 if (reload || pools == null) {
