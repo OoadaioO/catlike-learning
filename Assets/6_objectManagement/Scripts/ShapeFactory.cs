@@ -1,3 +1,5 @@
+
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,13 +8,21 @@ namespace obj.mamagement {
     [CreateAssetMenu(menuName = "Object-Manager/Shape Factory", fileName = "Shape Factory")]
     public class ShapeFactory : ScriptableObject {
 
-#if UNITY_EDITOR
-        static bool reload;
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void OnReload() {
-            reload = true;
+        public int FactoryId {
+            get {
+                return factoryId;
+            }
+            set {
+                if (factoryId == int.MinValue && value != int.MinValue) {
+                    factoryId = value;
+                } else {
+                    Debug.Log("Not allowed to change factoryId.");
+                }
+            }
         }
-#endif
+
+        [System.NonSerialized]
+        int factoryId = int.MinValue;
 
         [SerializeField]
         Shape[] prefabs;
@@ -27,22 +37,12 @@ namespace obj.mamagement {
 
         Scene poolScene;
 
-
-
         public Shape Get(int shapeId = 0, int materialId = 0) {
             Shape instance;
-
             if (recycle) {
-#if UNITY_EDITOR
-                if (reload || pools == null) {
-                    reload = false;
+                if (pools == null || poolScene == null || poolScene.name == null) {
                     CreatePools();
                 }
-#endif
-                if (pools == null) {
-                    CreatePools();
-                }
-
                 List<Shape> pool = pools[shapeId];
                 int lastIndex = pool.Count - 1;
                 if (lastIndex >= 0) {
@@ -51,20 +51,18 @@ namespace obj.mamagement {
                     pool.RemoveAt(lastIndex);
                 } else {
                     instance = Instantiate(prefabs[shapeId]);
+                    instance.OriginFactory = this;
                     instance.ShapeId = shapeId;
-                    instance.OriginalFactory = this;
-                    SceneManager.MoveGameObjectToScene(instance.gameObject, poolScene);
+                    SceneManager.MoveGameObjectToScene(
+                        instance.gameObject, poolScene
+                    );
                 }
-
             } else {
                 instance = Instantiate(prefabs[shapeId]);
                 instance.ShapeId = shapeId;
-                instance.OriginalFactory = this;
-                SceneManager.MoveGameObjectToScene(instance.gameObject, poolScene);
             }
 
             instance.SetMaterial(materials[materialId], materialId);
-
             return instance;
         }
 
@@ -76,28 +74,20 @@ namespace obj.mamagement {
         }
 
         public void Reclaim(Shape shapeToRecycle) {
-            if(shapeToRecycle.OriginalFactory != this){
-                Debug.LogError("Tried to reclaim shape with wrong factory");
+            if (shapeToRecycle.OriginFactory != this) {
+                Debug.LogError("Tried to reclaim shape with wrong factory.");
                 return;
             }
             if (recycle) {
-#if UNITY_EDITOR
-                if (reload || pools == null) {
-                    reload = false;
-                    CreatePools();
-                }
-#endif
                 if (pools == null) {
                     CreatePools();
                 }
                 pools[shapeToRecycle.ShapeId].Add(shapeToRecycle);
                 shapeToRecycle.gameObject.SetActive(false);
-
             } else {
                 Destroy(shapeToRecycle.gameObject);
             }
         }
-
 
         void CreatePools() {
 
@@ -122,6 +112,7 @@ namespace obj.mamagement {
 
             poolScene = SceneManager.CreateScene(name);
         }
+
 
     }
 }

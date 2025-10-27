@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace obj.mamagement {
     public class Game : PersistableObject {
 
-        const int saveVersion = 6;
+        const int saveVersion = 7;
 
         public float CreationSpeed { get; set; }
         public float DestructionSpeed { get; set; }
@@ -16,8 +16,8 @@ namespace obj.mamagement {
         [SerializeField]
         PersistentStorage storage;
 
-        [SerializeField]
-        ShapeFactory shapeFactory;
+        [SerializeField] ShapeFactory[] shapeFactories;
+
 
         [SerializeField]
         KeyCode createKey = KeyCode.C;
@@ -42,6 +42,8 @@ namespace obj.mamagement {
 
         [SerializeField] Slider creationSpeedSlider;
         [SerializeField] Slider destructionSpeedSlider;
+
+        
 
 
 
@@ -72,6 +74,14 @@ namespace obj.mamagement {
             }
             BeginNewGame();
             StartCoroutine(LoadLevel(1));
+        }
+
+        private void OnEnable() {
+            if (shapeFactories[0].FactoryId != 0) {
+                for (int i = 0; i < shapeFactories.Length; i++) {
+                    shapeFactories[i].FactoryId = i;
+                }
+            }
         }
 
 
@@ -180,10 +190,12 @@ namespace obj.mamagement {
             writer.Write(loadedLevelBuildIndex);
             GameLevel.Current.Save(writer);
             for (int i = 0; i < shapes.Count; i++) {
+                writer.Write(shapes[i].OriginFactory.FactoryId);
                 writer.Write(shapes[i].ShapeId);
                 writer.Write(shapes[i].MaterialId);
                 shapes[i].Save(writer);
             }
+
         }
 
         public override void Load(GameDataReader reader) {
@@ -219,9 +231,10 @@ namespace obj.mamagement {
             }
 
             for (int i = 0; i < count; i++) {
+                int factoryId = version >= 6 ? reader.ReadInt() : 0;
                 int shapeId = version > 0 ? reader.ReadInt() : 0;
                 int materialId = version > 0 ? reader.ReadInt() : 0;
-                Shape shape = shapeFactory.Get(shapeId, materialId);
+                Shape shape = shapeFactories[factoryId].Get(shapeId, materialId);
                 shape.Load(reader);
                 shapes.Add(shape);
             }

@@ -1,6 +1,7 @@
 
 
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace obj.mamagement {
@@ -10,32 +11,26 @@ namespace obj.mamagement {
         static int colorPropertyId = Shader.PropertyToID("_BaseColor");
         static MaterialPropertyBlock sharedPropertyBlock;
 
-        public Vector3 AngularVelocity { get; set; }
-        public Vector3 Velocity { get; set; }
-
-
-
-
 
         [SerializeField]
         MeshRenderer[] meshRenderers;
 
 
-        public ShapeFactory OriginalFactory {
+        public ShapeFactory OriginFactory {
 
             get {
-                return originalFactory;
+                return originFactory;
             }
             set {
-                if (originalFactory == null) {
-                    originalFactory = value;
+                if (originFactory == null) {
+                    originFactory = value;
                 } else {
                     Debug.LogError("Not allowed to change origin factory");
                 }
             }
         }
 
-        ShapeFactory originalFactory;
+        ShapeFactory originFactory;
 
 
         public int ShapeId {
@@ -51,9 +46,6 @@ namespace obj.mamagement {
         }
         int shapeId = int.MinValue;
 
-        public int MaterialId { get; private set; }
-
-
         public int ColorCount {
             get {
                 return colors.Length;
@@ -61,13 +53,24 @@ namespace obj.mamagement {
         }
         Color[] colors;
 
+
+        public int MaterialId { get; private set; }
+
+        public float Age{ get; private set; }
+
+
+        List<ShapeBehaviour> behaviorList = new List<ShapeBehaviour>();
+
         private void Awake() {
             colors = new Color[meshRenderers.Length];
         }
 
         public void GameUpdate() {
-            transform.Rotate(AngularVelocity * Time.deltaTime);
-            transform.localPosition += Velocity * Time.deltaTime;
+            Age += Time.deltaTime;
+            
+            for (int i = 0; i < behaviorList.Count; i++) {
+                behaviorList[i].GameUpdate(this);
+            }
         }
 
         public void SetMaterial(Material material, int materialId) {
@@ -98,27 +101,7 @@ namespace obj.mamagement {
         }
 
 
-        public override void Save(GameDataWriter writer) {
-            base.Save(writer);
-            writer.Write(colors.Length);
-            for (int i = 0; i < colors.Length; i++) {
-                writer.Write(colors[i]);
-            }
-            writer.Write(AngularVelocity);
-            writer.Write(Velocity);
-        }
 
-        public override void Load(GameDataReader reader) {
-            base.Load(reader);
-            if (reader.Version >= 6) {
-                LoadColors(reader);
-            } else {
-                SetColor(reader.Version > 0 ? reader.ReadColor() : Color.white);
-            }
-            AngularVelocity = reader.Version >= 5 ? reader.ReadVector3() : Vector3.zero;
-            Velocity = reader.Version >= 4 ? reader.ReadVector3() : Vector3.zero;
-
-        }
 
         void LoadColors(GameDataReader reader) {
             int count = reader.ReadInt();
@@ -138,10 +121,64 @@ namespace obj.mamagement {
                 }
             }
         }
-        
-        public void Recycle(){
-            OriginalFactory.Reclaim(this);
+
+
+        public void Recycle() {
+            Age = 0f;
+            for (int i = 0; i < behaviorList.Count; i++) {
+                behaviorList[i].Recycle();
+            }
+            behaviorList.Clear();
+            OriginFactory.Reclaim(this);
         }
+
+        public T AddBehavior<T>() where T : ShapeBehaviour, new() {
+            T behavior = ShapeBehaviorPool<T>.Get();
+            behaviorList.Add(behavior);
+            return behavior;
+        }
+
+        public override void Save(GameDataWriter writer) {
+            base.Save(writer);
+            writer.Write(colors.Length);
+            for (int i = 0; i < colors.Length; i++) {
+                writer.Write(colors[i]);
+            }
+
+            writer.Write(Age);
+            writer.Write(behaviorList.Count);
+            for (int i = 0; i < behaviorList.Count; i++) {
+                writer.Write((int)behaviorList[i].BehaviorType);
+                behaviorList[i].Save(writer);
+            }
+
+        }
+
+        public override void Load(GameDataReader reader) {
+            base.Load(reader);
+            if (reader.Version >= 6) {
+                LoadColors(reader);
+            } else {
+                SetColor(reader.Version > 0 ? reader.ReadColor() : Color.white);
+            }
+
+            if (reader.Version >= 7) {
+                Age = reader.ReadFloat();
+                int behaviorCount = reader.ReadInt();
+                for (int i = 0; i < behaviorCount; i++) {
+                    ShapeBehaviour behavior = ((ShapeBehaviorType)reader.ReadInt()).GetInstance();
+                    behaviorList.Add(behavior);
+                    behavior.Load(reader);
+                }
+            } else if (reader.Version >= 4) {
+                AddBehavior<RotationShapeBehavior>().AngularVelocity = reader.ReadVector3();
+                AddBehavior<MovementShapeBehaviour>().Velocity = reader.ReadVector3();
+            }
+
+
+        }
+
+
 
     }
 }

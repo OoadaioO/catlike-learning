@@ -228,7 +228,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storage: {fileID: 331122782}
-  shapeFactory: {fileID: 11400000, guid: c2e92aed45eb34686a94982873881fb6, type: 2}
+  shapeFactories:
+  - {fileID: 11400000, guid: c2e92aed45eb34686a94982873881fb6, type: 2}
+  - {fileID: 11400000, guid: 2d943a3106ede4ebebf8cf640b4e77f5, type: 2}
   createKey: 99
   newGameKey: 110
   saveKey: 115
