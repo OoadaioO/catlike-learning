@@ -62,6 +62,12 @@ namespace obj.mamagement {
 
         public int SaveIndex { get; set; }
 
+        public bool IsMarkedAsDying {
+            get {
+                return Game.Instance.IsMarkedAsDying(this);
+            }
+        }
+
 
         List<ShapeBehavior> behaviorList = new List<ShapeBehavior>();
 
@@ -130,6 +136,13 @@ namespace obj.mamagement {
         }
 
 
+        public void Die() {
+            Game.Instance.Kill(this);
+        }
+        public void MarkAsDying() {
+            Game.Instance.MarkAsDying(this);
+        }
+
         public void Recycle() {
             Age = 0f;
             InstanceId += 1;
@@ -146,11 +159,12 @@ namespace obj.mamagement {
             return behavior;
         }
 
-        public void ResolveShapeInstances(){
-            for (int i = 0; i < behaviorList.Count;i++){
+        public void ResolveShapeInstances() {
+            for (int i = 0; i < behaviorList.Count; i++) {
                 behaviorList[i].ResolveShapeInstances();
             }
         }
+
 
         public override void Save(GameDataWriter writer) {
             base.Save(writer);
@@ -191,8 +205,6 @@ namespace obj.mamagement {
 
 
         }
-
-
 
 
 

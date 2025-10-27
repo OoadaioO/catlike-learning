@@ -329,6 +329,17 @@ MonoBehaviour:
       orbitFrequency:
         min: 0.05
         max: 0.2
+      uniformLifecycles: 0
+    lifecycle:
+      growingDuration:
+        min: 1
+        max: 2
+      adultDuration:
+        min: 1
+        max: 5
+      dyingDuration:
+        min: 2
+        max: 2
   surfaceOnly: 0
 --- !u!1 &1865534745
 GameObject:
@@ -361,7 +372,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnZone: {fileID: 1316098356}
   persistableObjects: []
-  populationLimit: 10
+  populationLimit: 50
 --- !u!4 &1865534747
 Transform:
   m_ObjectHideFlags: 0

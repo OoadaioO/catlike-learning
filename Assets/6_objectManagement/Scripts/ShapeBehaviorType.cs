@@ -7,7 +7,10 @@ namespace obj.mamagement {
         Movement,
         Rotation,
         Oscillation,
-        Satellite
+        Satellite,
+        Growing,
+        Dying,
+        Lifecycle
     }
 
     public static class ShapeBehaviorTypeMethods {
@@ -21,6 +24,12 @@ namespace obj.mamagement {
                     return ShapeBehaviorPool<OscillationShapeBehavior>.Get();
                 case ShapeBehaviorType.Satellite:
                     return ShapeBehaviorPool<SatelliteShapeBehavior>.Get();
+                case ShapeBehaviorType.Growing:
+                    return ShapeBehaviorPool<GrowingShapeBehavior>.Get();
+                case ShapeBehaviorType.Dying:
+                    return ShapeBehaviorPool<DyingShapeBehavior>.Get();
+                case ShapeBehaviorType.Lifecycle:
+                    return ShapeBehaviorPool<LifecycleShapeBehavior>.Get();
             }
             Debug.Log("Forget to support type:" + type);
             return null;
