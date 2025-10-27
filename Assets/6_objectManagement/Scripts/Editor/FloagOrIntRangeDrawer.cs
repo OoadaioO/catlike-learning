@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace obj.mamagement {
 
-    [CustomPropertyDrawer(typeof(FloatRange))]
-    public class FloagRangeDrawer : PropertyDrawer {
+    [CustomPropertyDrawer(typeof(FloatRange)),CustomPropertyDrawer(typeof(IntRange))]
+    public class FloagOrIntRangeDrawer : PropertyDrawer {
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
 

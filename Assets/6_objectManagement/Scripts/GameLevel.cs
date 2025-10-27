@@ -5,22 +5,31 @@ namespace obj.mamagement {
 
         public static GameLevel Current { get; private set; }
 
+        public int PopulationLimit {
+            get {
+                return populationLimit;
+            }
+        }
+
         [SerializeField]
         SpawnZone spawnZone;
 
         [SerializeField]
         PersistableObject[] persistableObjects;
 
+        [SerializeField]
+        int populationLimit;
+
 
         private void OnEnable() {
             Current = this;
-            if(persistableObjects == null){
+            if (persistableObjects == null) {
                 persistableObjects = new PersistableObject[0];
             }
         }
 
-        public Shape SpawnShape(){
-            return spawnZone.SpawnShape();
+        public void SpawnShapes() {
+            spawnZone.SpawnShapes();
         }
 
 

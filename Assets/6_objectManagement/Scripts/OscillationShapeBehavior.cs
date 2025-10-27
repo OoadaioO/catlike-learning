@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace obj.mamagement {
-    public class OscillationShapeBehavior : ShapeBehaviour {
+    public class OscillationShapeBehavior : ShapeBehavior {
         public override ShapeBehaviorType BehaviorType {
             get {
                 return ShapeBehaviorType.Oscillation;
@@ -15,10 +15,11 @@ namespace obj.mamagement {
 
         float previousOscillation;
 
-        public override void GameUpdate(Shape shape) {
+        public override bool GameUpdate(Shape shape) {
             float oscillation = Mathf.Sin(2f * Mathf.PI * Frequency * shape.Age);
             shape.transform.localPosition += (oscillation - previousOscillation) * Offset;
             previousOscillation = oscillation;
+            return true;
         }
 
 

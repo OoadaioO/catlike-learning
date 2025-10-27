@@ -56,10 +56,14 @@ namespace obj.mamagement {
 
         public int MaterialId { get; private set; }
 
-        public float Age{ get; private set; }
+        public float Age { get; private set; }
+
+        public int InstanceId { get; private set; }
+
+        public int SaveIndex { get; set; }
 
 
-        List<ShapeBehaviour> behaviorList = new List<ShapeBehaviour>();
+        List<ShapeBehavior> behaviorList = new List<ShapeBehavior>();
 
         private void Awake() {
             colors = new Color[meshRenderers.Length];
@@ -67,9 +71,12 @@ namespace obj.mamagement {
 
         public void GameUpdate() {
             Age += Time.deltaTime;
-            
+
             for (int i = 0; i < behaviorList.Count; i++) {
-                behaviorList[i].GameUpdate(this);
+                if (!behaviorList[i].GameUpdate(this)) {
+                    behaviorList[i].Recycle();
+                    behaviorList.RemoveAt(i--);
+                }
             }
         }
 
@@ -125,6 +132,7 @@ namespace obj.mamagement {
 
         public void Recycle() {
             Age = 0f;
+            InstanceId += 1;
             for (int i = 0; i < behaviorList.Count; i++) {
                 behaviorList[i].Recycle();
             }
@@ -132,10 +140,16 @@ namespace obj.mamagement {
             OriginFactory.Reclaim(this);
         }
 
-        public T AddBehavior<T>() where T : ShapeBehaviour, new() {
+        public T AddBehavior<T>() where T : ShapeBehavior, new() {
             T behavior = ShapeBehaviorPool<T>.Get();
             behaviorList.Add(behavior);
             return behavior;
+        }
+
+        public void ResolveShapeInstances(){
+            for (int i = 0; i < behaviorList.Count;i++){
+                behaviorList[i].ResolveShapeInstances();
+            }
         }
 
         public override void Save(GameDataWriter writer) {
@@ -166,17 +180,19 @@ namespace obj.mamagement {
                 Age = reader.ReadFloat();
                 int behaviorCount = reader.ReadInt();
                 for (int i = 0; i < behaviorCount; i++) {
-                    ShapeBehaviour behavior = ((ShapeBehaviorType)reader.ReadInt()).GetInstance();
+                    ShapeBehavior behavior = ((ShapeBehaviorType)reader.ReadInt()).GetInstance();
                     behaviorList.Add(behavior);
                     behavior.Load(reader);
                 }
             } else if (reader.Version >= 4) {
                 AddBehavior<RotationShapeBehavior>().AngularVelocity = reader.ReadVector3();
-                AddBehavior<MovementShapeBehaviour>().Velocity = reader.ReadVector3();
+                AddBehavior<MovementShapeBehavior>().Velocity = reader.ReadVector3();
             }
 
 
         }
+
+
 
 
 

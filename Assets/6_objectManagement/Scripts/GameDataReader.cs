@@ -1,4 +1,5 @@
 using System.IO;
+using obj.mamagement;
 using UnityEngine;
 
 public class GameDataReader {
@@ -47,5 +48,9 @@ public class GameDataReader {
 
     public Random.State ReadRandomState(){
         return JsonUtility.FromJson<Random.State>(reader.ReadString());
+    }
+
+    public ShapeInstance ReadShapeInstance(){
+        return new ShapeInstance(reader.ReadInt32());
     }
 }

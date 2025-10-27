@@ -63,6 +63,7 @@ namespace obj.mamagement {
             }
 
             instance.SetMaterial(materials[materialId], materialId);
+            Game.Instance.AddShape(instance);
             return instance;
         }
 

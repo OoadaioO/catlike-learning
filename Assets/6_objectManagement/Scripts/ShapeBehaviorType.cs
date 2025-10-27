@@ -6,18 +6,21 @@ namespace obj.mamagement {
     public enum ShapeBehaviorType {
         Movement,
         Rotation,
-        Oscillation
+        Oscillation,
+        Satellite
     }
 
     public static class ShapeBehaviorTypeMethods {
-        public static ShapeBehaviour GetInstance(this ShapeBehaviorType type) {
+        public static ShapeBehavior GetInstance(this ShapeBehaviorType type) {
             switch (type) {
                 case ShapeBehaviorType.Movement:
-                    return ShapeBehaviorPool<MovementShapeBehaviour>.Get();
+                    return ShapeBehaviorPool<MovementShapeBehavior>.Get();
                 case ShapeBehaviorType.Rotation:
                     return ShapeBehaviorPool<RotationShapeBehavior>.Get();
                 case ShapeBehaviorType.Oscillation:
                     return ShapeBehaviorPool<OscillationShapeBehavior>.Get();
+                case ShapeBehaviorType.Satellite:
+                    return ShapeBehaviorPool<SatelliteShapeBehavior>.Get();
             }
             Debug.Log("Forget to support type:" + type);
             return null;

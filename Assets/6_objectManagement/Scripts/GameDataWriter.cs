@@ -29,15 +29,19 @@ namespace obj.mamagement {
             writer.Write(value.w);
         }
 
-        public void Write(Color color){
+        public void Write(Color color) {
             writer.Write(color.r);
             writer.Write(color.g);
             writer.Write(color.b);
             writer.Write(color.a);
         }
 
-        public void Write(Random.State value){
+        public void Write(Random.State value) {
             writer.Write(JsonUtility.ToJson(value));
+        }
+
+        public void Write(ShapeInstance value) {
+            writer.Write(value.IsValid ? value.Shape.SaveIndex : -1);
         }
     }
 }

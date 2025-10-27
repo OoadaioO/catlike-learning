@@ -2,14 +2,15 @@
 using UnityEngine;
 
 namespace obj.mamagement {
-    public sealed class MovementShapeBehaviour : ShapeBehaviour {
+    public sealed class MovementShapeBehavior : ShapeBehavior {
 
         public Vector3 Velocity { get; set; }
 
         public override ShapeBehaviorType BehaviorType => ShapeBehaviorType.Movement;
 
-        public override void GameUpdate(Shape shape) {
+        public override bool GameUpdate(Shape shape) {
             shape.transform.localPosition += Velocity * Time.deltaTime;
+            return true;
         }
 
         public override void Save(GameDataWriter writer) {
@@ -21,7 +22,7 @@ namespace obj.mamagement {
         }
 
         public override void Recycle() {
-            ShapeBehaviorPool<MovementShapeBehaviour>.Reclaim(this);
+            ShapeBehaviorPool<MovementShapeBehavior>.Reclaim(this);
         }
     }
 }

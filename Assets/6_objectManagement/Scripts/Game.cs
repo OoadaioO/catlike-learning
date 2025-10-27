@@ -9,6 +9,8 @@ namespace obj.mamagement {
 
         const int saveVersion = 7;
 
+        public static Game Instance { get; private set; }
+
         public float CreationSpeed { get; set; }
         public float DestructionSpeed { get; set; }
 
@@ -43,7 +45,7 @@ namespace obj.mamagement {
         [SerializeField] Slider creationSpeedSlider;
         [SerializeField] Slider destructionSpeedSlider;
 
-        
+
 
 
 
@@ -77,6 +79,7 @@ namespace obj.mamagement {
         }
 
         private void OnEnable() {
+            Instance = this;
             if (shapeFactories[0].FactoryId != 0) {
                 for (int i = 0; i < shapeFactories.Length; i++) {
                     shapeFactories[i].FactoryId = i;
@@ -87,7 +90,7 @@ namespace obj.mamagement {
 
         private void Update() {
             if (Input.GetKeyDown(createKey)) {
-                CreateShape();
+                GameLevel.Current.SpawnShapes();
             } else if (Input.GetKeyDown(newGameKey)) {
                 BeginNewGame();
                 StartCoroutine(LoadLevel(loadedLevelBuildIndex));
@@ -120,7 +123,7 @@ namespace obj.mamagement {
 
             while (creationProgress >= 1f) {
                 creationProgress -= 1f;
-                CreateShape();
+                GameLevel.Current.SpawnShapes();
             }
 
             destructProgress += Time.deltaTime * DestructionSpeed;
@@ -128,6 +131,13 @@ namespace obj.mamagement {
             while (destructProgress >= 1f) {
                 destructProgress -= 1f;
                 DestroyShape();
+            }
+
+            int limit = GameLevel.Current.PopulationLimit;
+            if (limit > 0) {
+                while (shapes.Count > limit) {
+                    DestroyShape();
+                }
             }
         }
 
@@ -148,9 +158,15 @@ namespace obj.mamagement {
             enabled = true;
         }
 
-        void CreateShape() {
-            shapes.Add(GameLevel.Current.SpawnShape());
+
+        public void AddShape(Shape shape) {
+            shape.SaveIndex = shapes.Count;
+            shapes.Add(shape);
         }
+        public Shape GetShape(int index) {
+            return shapes[index];
+        }
+
 
         void BeginNewGame() {
             Random.state = mainRandomState;
@@ -173,6 +189,7 @@ namespace obj.mamagement {
                 int index = Random.Range(0, shapes.Count);
                 shapes[index].Recycle();
                 int lastIndex = shapes.Count - 1;
+                shapes[lastIndex].SaveIndex = index;
                 shapes[index] = shapes[lastIndex];
                 shapes.RemoveAt(lastIndex);
             }
@@ -236,7 +253,10 @@ namespace obj.mamagement {
                 int materialId = version > 0 ? reader.ReadInt() : 0;
                 Shape shape = shapeFactories[factoryId].Get(shapeId, materialId);
                 shape.Load(reader);
-                shapes.Add(shape);
+            }
+
+            for (int i = 0; i < shapes.Count; i++) {
+                shapes[i].ResolveShapeInstances();
             }
         }
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 namespace obj.mamagement {
-    public static class ShapeBehaviorPool<T> where T : ShapeBehaviour, new() {
+    public static class ShapeBehaviorPool<T> where T : ShapeBehavior, new() {
         static Stack<T> stack = new Stack<T>();
 
         public static T Get() {
