@@ -47,10 +47,14 @@ namespace obj.mamagement {
         }
 
         public override void Save(GameDataWriter writer) {
+            base.Save(writer);
             writer.Write(nextSeqential);
         }
 
         public override void Load(GameDataReader reader) {
+            if (reader.Version >= 8) {
+                base.Load(reader);
+            }
             nextSeqential = reader.ReadInt();
         }
     }

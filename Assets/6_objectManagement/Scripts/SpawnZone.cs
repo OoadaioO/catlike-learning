@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace obj.mamagement {
-    public abstract class SpawnZone : PersistableObject {
+    public abstract class SpawnZone : GameLevelObject {
 
 
         [System.Serializable]
@@ -70,6 +70,11 @@ namespace obj.mamagement {
 
         [SerializeField]
         SpawnConfiguration spawnConfig;
+
+        [SerializeField, Range(0f, 50f)]
+        float spawnSpeed;
+
+        float spawnProgress;
 
 
         public abstract Vector3 SpawnPoint { get; }
@@ -186,6 +191,23 @@ namespace obj.mamagement {
                     shape, durations.z
                 );
             }
+        }
+
+        public override void GameUpdate() {
+            spawnProgress += Time.deltaTime * spawnSpeed;
+            while (spawnProgress >= 1f) {
+                spawnProgress -= 1f;
+                SpawnShapes();
+            }
+        }
+
+
+        public override void Save(GameDataWriter writer) {
+            writer.Write(spawnProgress);
+        }
+
+        public override void Load(GameDataReader reader) {
+            spawnProgress = reader.ReadFloat();
         }
 
 

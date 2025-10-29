@@ -1,7 +1,9 @@
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace obj.mamagement {
-    public class GameLevel : PersistableObject {
+    public partial class GameLevel : PersistableObject {
 
         public static GameLevel Current { get; private set; }
 
@@ -14,17 +16,18 @@ namespace obj.mamagement {
         [SerializeField]
         SpawnZone spawnZone;
 
+        [FormerlySerializedAs("persistableObjects")]
         [SerializeField]
-        PersistableObject[] persistableObjects;
+        GameLevelObject[] levelObjects;
 
         [SerializeField]
         int populationLimit;
 
-
+      
         private void OnEnable() {
             Current = this;
-            if (persistableObjects == null) {
-                persistableObjects = new PersistableObject[0];
+            if (levelObjects == null) {
+                levelObjects = new GameLevelObject[0];
             }
         }
 
@@ -32,17 +35,24 @@ namespace obj.mamagement {
             spawnZone.SpawnShapes();
         }
 
+        public void GameUpdate() {
+            for (int i = 0; i < levelObjects.Length; i++) {
+                levelObjects[i].GameUpdate();
+            }
+        }
+
+
 
         public override void Save(GameDataWriter writer) {
-            writer.Write(persistableObjects.Length);
-            for (int i = 0; i < persistableObjects.Length; i++) {
-                persistableObjects[i].Save(writer);
+            writer.Write(levelObjects.Length);
+            for (int i = 0; i < levelObjects.Length; i++) {
+                levelObjects[i].Save(writer);
             }
         }
         public override void Load(GameDataReader reader) {
             int saveCount = reader.ReadInt();
             for (int i = 0; i < saveCount; i++) {
-                persistableObjects[i].Load(reader);
+                levelObjects[i].Load(reader);
             }
         }
     }
