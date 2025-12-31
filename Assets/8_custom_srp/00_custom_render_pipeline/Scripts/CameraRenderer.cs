@@ -20,7 +20,7 @@ namespace custom.render.pipeline {
             name = bufferName
         };
 
-        public void Render(ScriptableRenderContext context, Camera camera) {
+        public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing) {
             this.context = context;
             this.camera = camera;
 
@@ -32,7 +32,7 @@ namespace custom.render.pipeline {
             }
 
             Setup();
-            DrawVisibleGemetry();
+            DrawVisibleGemetry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
             Submit();
@@ -48,14 +48,14 @@ namespace custom.render.pipeline {
         }
 
         void Setup() {
-            
+
             context.SetupCameraProperties(camera);
-            
+
             CameraClearFlags flags = camera.clearFlags;
             buffer.ClearRenderTarget(
-                flags <= CameraClearFlags.Depth, 
+                flags <= CameraClearFlags.Depth,
                 flags <= CameraClearFlags.Color,
-                flags == CameraClearFlags.Color?camera.backgroundColor.linear:Color.clear
+                flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear
             );
 
             buffer.BeginSample(SampleName);
@@ -63,11 +63,14 @@ namespace custom.render.pipeline {
 
         }
 
-        void DrawVisibleGemetry() {
+        void DrawVisibleGemetry(bool useDynamicBatching, bool useGPUInstancing) {
             var sortingSettings = new SortingSettings(camera) {
                 criteria = SortingCriteria.CommonOpaque
             };
-            var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings);
+            var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings) {
+                enableDynamicBatching = useDynamicBatching,
+                enableInstancing = useGPUInstancing,
+            };
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
             context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);

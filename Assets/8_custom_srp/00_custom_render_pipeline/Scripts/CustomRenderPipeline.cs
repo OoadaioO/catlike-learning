@@ -8,7 +8,14 @@ namespace custom.render.pipeline {
 
         CameraRenderer renderer = new CameraRenderer();
 
+        bool useDynamicBatching,useGPUInstancing;
+
         
+        public CustomRenderPipeline(bool useDynamicBatching,bool useGPUInstancing,bool useSRPBatcher){
+            this.useDynamicBatching = useDynamicBatching;
+            this.useGPUInstancing = useGPUInstancing;
+            GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        }
 
 
 
@@ -18,7 +25,7 @@ namespace custom.render.pipeline {
         protected override void Render(ScriptableRenderContext context, List<Camera> cameras) {
 
             for (int i = 0; i < cameras.Count; i++) {
-                renderer.Render(context, cameras[i]);
+                renderer.Render(context, cameras[i],useDynamicBatching,useGPUInstancing);
             }
         }
     }

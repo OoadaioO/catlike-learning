@@ -1,0 +1,34 @@
+
+
+
+#ifndef CUSTOM_COMMON_INCLUDE
+
+#define CUSTOM_COMMON_INCLUDE
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "UnityInput.hlsl"
+
+// 对象空间 -> 世界空间
+#define UNITY_MATRIX_M unity_ObjectToWorld
+// 对象空间 -> 世界空间逆矩阵
+#define UNITY_MATRIX_I_M unity_WorldToObject
+
+// 世界空间 -> 视图空间
+#define UNITY_MATRIX_V unity_MatrixV
+// 逆矩阵
+#define UNITY_MATRIX_I_V unity_MatrixInvV
+
+// 视图控件 -> 投影空间
+#define UNITY_MATRIX_VP unity_MatrixVP
+// ?
+#define UNITY_PREV_MATRIX_M unity_prev_MatrixM
+// ?
+#define UNITY_PREV_MATRIX_I_M unity_prev_MatrixIM
+// ?
+#define UNITY_MATRIX_P glstate_matrix_projection
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+
+
+#endif
