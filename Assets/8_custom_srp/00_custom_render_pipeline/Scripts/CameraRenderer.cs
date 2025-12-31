@@ -5,7 +5,8 @@ using UnityEngine.Rendering;
 namespace custom.render.pipeline {
     public partial class CameraRenderer {
 
-        static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+        static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
+                            litShaderTagId = new ShaderTagId("CustomLit");
 
 
         ScriptableRenderContext context;
@@ -20,6 +21,8 @@ namespace custom.render.pipeline {
             name = bufferName
         };
 
+        Lighting lighting = new Lighting();
+
         public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing) {
             this.context = context;
             this.camera = camera;
@@ -32,6 +35,7 @@ namespace custom.render.pipeline {
             }
 
             Setup();
+            lighting.Setup(context,cullingResults);
             DrawVisibleGemetry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
@@ -71,6 +75,7 @@ namespace custom.render.pipeline {
                 enableDynamicBatching = useDynamicBatching,
                 enableInstancing = useGPUInstancing,
             };
+            drawingSettings.SetShaderPassName(1, litShaderTagId);
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
             context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
