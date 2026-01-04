@@ -1,0 +1,55 @@
+using UnityEngine;
+
+namespace custom.render.pipeline {
+
+    [System.Serializable]
+    public class ShadowSettings {
+
+        public enum FilterMode {
+            PCF2x2, PCF3x3, PCF5x5, PCF7x7
+        }
+
+        [System.Serializable]
+        public struct Directional {
+            public MapSize atlasSize;
+            public FilterMode filter;
+
+            [Range(1, 4)]
+            public int cascadeCount;
+
+            [Range(0f, 1f)]
+            public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
+
+            [Range(0.001f, 1f)]
+            public float cascadeFade;
+
+            public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
+
+            public enum CascadeBlendMode{
+                Hard,Soft,Dither
+            }
+            public CascadeBlendMode cascadeBlend;
+        }
+
+
+        [Min(0f)]
+        public float maxDistance = 100f;
+
+        [Range(0.001f, 1f)]
+        public float distanceFade = 0.1f;
+
+        public Directional directional = new Directional {
+            atlasSize = MapSize._1024,
+            cascadeCount = 4,
+            cascadeRatio1 = 0.1f,
+            cascadeRatio2 = 0.25f,
+            cascadeRatio3 = 0.5f,
+            cascadeFade = 0.1f,
+            filter = FilterMode.PCF2x2,
+            cascadeBlend = Directional.CascadeBlendMode.Hard,
+        };
+
+
+    }
+
+}
