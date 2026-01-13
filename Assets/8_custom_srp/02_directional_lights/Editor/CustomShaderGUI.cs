@@ -64,12 +64,14 @@ namespace custom.render.pipeline {
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties) {
             EditorGUI.BeginChangeCheck();
-            
+
             base.OnGUI(materialEditor, properties);
 
             editor = materialEditor;
             materials = materialEditor.targets;
             this.properties = properties;
+
+            BakedEmission();
 
             EditorGUILayout.Space();
             showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true);
@@ -81,10 +83,36 @@ namespace custom.render.pipeline {
                 TransparentPreset();
             }
 
-            if(EditorGUI.EndChangeCheck()){
+            if (EditorGUI.EndChangeCheck()) {
                 SetShadowCastPass();
+                CopyLightMappingProperties();
             }
 
+        }
+
+        void CopyLightMappingProperties() {
+            MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
+            MaterialProperty baseMap = FindProperty("_BaseMap", properties, false);
+            if (mainTex != null && baseMap != null) {
+                mainTex.textureValue = baseMap.textureValue;
+                mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
+            }
+            MaterialProperty color = FindProperty("_Color", properties, false);
+            MaterialProperty baseColor =
+                FindProperty("_BaseColor", properties, false);
+            if (color != null && baseColor != null) {
+                color.colorValue = baseColor.colorValue;
+            }
+        }
+
+        void BakedEmission() {
+            EditorGUI.BeginChangeCheck();
+            editor.LightmapEmissionProperty();
+            if (EditorGUI.EndChangeCheck()) {
+                foreach (Material m in editor.targets) {
+                    m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                }
+            }
         }
 
         bool HasProperty(string name) => FindProperty(name, properties, false) != null;
@@ -121,6 +149,7 @@ namespace custom.render.pipeline {
         void OpaquePreset() {
             if (PresetButton("Opaque")) {
                 Clipping = false;
+                Shadows = ShadowMode.On;
                 PremultiplyAlpha = false;
                 SrcBlend = BlendMode.One;
                 DstBlend = BlendMode.Zero;
@@ -132,6 +161,7 @@ namespace custom.render.pipeline {
         void ClipPreset() {
             if (PresetButton("Clip")) {
                 Clipping = true;
+                Shadows = ShadowMode.Clip;
                 PremultiplyAlpha = false;
                 SrcBlend = BlendMode.One;
                 DstBlend = BlendMode.Zero;
@@ -143,6 +173,7 @@ namespace custom.render.pipeline {
         void FadePreset() {
             if (PresetButton("Fade")) {
                 Clipping = false;
+                Shadows = ShadowMode.Dither;
                 PremultiplyAlpha = false;
                 SrcBlend = BlendMode.SrcAlpha;
                 DstBlend = BlendMode.OneMinusSrcAlpha;
@@ -154,6 +185,7 @@ namespace custom.render.pipeline {
         void TransparentPreset() {
             if (HasPremultiplyAlpha && PresetButton("Transparent")) {
                 Clipping = false;
+                Shadows = ShadowMode.Dither;
                 PremultiplyAlpha = true;
                 SrcBlend = BlendMode.One;
                 DstBlend = BlendMode.OneMinusSrcAlpha;

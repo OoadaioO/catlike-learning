@@ -37,9 +37,9 @@ namespace custom.render.pipeline {
 
             buffer.BeginSample(SampleName);
             ExecuteBuffer();
-            lighting.Setup(context, cullingResults,shadowSettings);
+            lighting.Setup(context, cullingResults, shadowSettings);
             buffer.EndSample(SampleName);
-            
+
             Setup();
             DrawVisibleGemetry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
@@ -81,6 +81,7 @@ namespace custom.render.pipeline {
             var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings) {
                 enableDynamicBatching = useDynamicBatching,
                 enableInstancing = useGPUInstancing,
+                perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume
             };
             drawingSettings.SetShaderPassName(1, litShaderTagId);
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);

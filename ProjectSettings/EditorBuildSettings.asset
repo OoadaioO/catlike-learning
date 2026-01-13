@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/8_custom_srp/04_baked_light/baked-light.unity
+    guid: 3237f8795b56a41c9a91de66e80ca6f5
   m_configObjects: {}

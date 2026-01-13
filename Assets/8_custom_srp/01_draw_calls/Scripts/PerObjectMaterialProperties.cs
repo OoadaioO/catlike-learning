@@ -9,6 +9,7 @@ namespace custom.render.pipeline {
         static int cutoffId = Shader.PropertyToID("_Cutoff");
         static int metallicId = Shader.PropertyToID("_Metallic");
         static int smoothnessId = Shader.PropertyToID("_Smoothness");
+        static int emissionColorId = Shader.PropertyToID("_EmissionColor");
 
         static MaterialPropertyBlock block;
 
@@ -17,6 +18,10 @@ namespace custom.render.pipeline {
 
         [Range(0, 1)]
         [SerializeField] float cutoff = 0.5f, metallic = 0f, smoothness = 0.5f;
+
+        [SerializeField, ColorUsage(false, true)]
+        Color emissionColor = Color.black;
+
 
 
         private void Awake() {
@@ -33,6 +38,7 @@ namespace custom.render.pipeline {
             block.SetColor(baseColorId, baseColor);
             block.SetFloat(metallicId, metallic);
             block.SetFloat(smoothnessId, smoothness);
+            block.SetColor(emissionColorId, emissionColor);
             GetComponent<Renderer>().SetPropertyBlock(block);
         }
 
