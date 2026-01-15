@@ -29,6 +29,11 @@ namespace custom.render.pipeline {
             "_CASCADE_BLEND_DITHER",
         };
 
+        static string[] shadowMaskKeywords = {
+            "_SHADOW_MASK_ALWAYS",
+            "_SHADOW_MASK_DISTANCE"
+        };
+
 
         struct ShadowedDirectinoalLight {
             public int visibleLightIndex;
@@ -49,11 +54,15 @@ namespace custom.render.pipeline {
 
         int ShadowedDirectionalLightCount;
 
+        bool useShadowMask;
+
         public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings settings) {
             this.context = context;
             this.cullingResults = cullingResults;
             this.settings = settings;
             ShadowedDirectionalLightCount = 0;
+
+            useShadowMask = false;
         }
 
 
@@ -66,6 +75,13 @@ namespace custom.render.pipeline {
                     32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap
                 );
             }
+
+            buffer.BeginSample(bufferName);
+            SetKeywords(shadowMaskKeywords, useShadowMask ? 
+                QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : 
+                -1);
+            buffer.EndSample(bufferName);
+            ExecuteBuffer();
         }
 
         void RenderDirectionalShadows() {
@@ -129,7 +145,7 @@ namespace custom.render.pipeline {
             int tileOffset = index * cascadeCount;
             Vector3 ratios = settings.directional.CascadeRatios;
 
-            float cullingFactor = Mathf.Max(0f,0.8f - settings.directional.cascadeFade);
+            float cullingFactor = Mathf.Max(0f, 0.8f - settings.directional.cascadeFade);
 
             // 渲染光源级联阴影贴图
             for (int i = 0; i < cascadeCount; i++) {
@@ -224,23 +240,38 @@ namespace custom.render.pipeline {
 
 
         // 每个光源阴影设置
-        public Vector3 ReverseDirectionalShadows(Light light, int visibleLightIndex) {
+        public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex) {
             if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
-                light.shadows != LightShadows.None && light.shadowStrength > 0f &&
-                cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) {
+                light.shadows != LightShadows.None && light.shadowStrength > 0f) {
+                float maskChannel = -1;
+                LightBakingOutput lightBaking = light.bakingOutput;
+                if (
+                    lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+                    lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask
+                ) {
+                    useShadowMask = true;
+                    maskChannel = lightBaking.occlusionMaskChannel;
+                }
+
+                if (!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) {
+                    return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
+                }
+
+
                 ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
                     new ShadowedDirectinoalLight {
                         visibleLightIndex = visibleLightIndex, // 光源索引
                         slopeScaleBias = light.shadowBias, // 光源对应斜率偏移
                         nearPlaneOffset = light.shadowNearPlane
                     };
-                return new Vector3(
+                return new Vector4(
                     light.shadowStrength, // 光源阴影强度
                     settings.directional.cascadeCount * ShadowedDirectionalLightCount++, // 光源对应光照贴图 tile 索引
-                    light.shadowNormalBias // 光源法线偏移
+                    light.shadowNormalBias ,// 光源法线偏移
+                    maskChannel
                 );
             }
-            return Vector3.zero;
+            return new Vector4(0f, 0f, 0f, -1f);
         }
 
 

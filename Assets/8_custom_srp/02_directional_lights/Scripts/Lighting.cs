@@ -64,7 +64,7 @@ namespace custom.render.pipeline {
         void SetupDirectionalLight(int index, ref VisibleLight visibleLight) {
             dirLightColors[index] = visibleLight.finalColor;
             dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
-            dirLightShadowData[index] = shadows.ReverseDirectionalShadows(visibleLight.light, index);
+            dirLightShadowData[index] = shadows.ReserveDirectionalShadows(visibleLight.light, index);
 
         }
 
