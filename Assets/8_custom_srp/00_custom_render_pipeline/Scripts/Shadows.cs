@@ -77,8 +77,8 @@ namespace custom.render.pipeline {
             }
 
             buffer.BeginSample(bufferName);
-            SetKeywords(shadowMaskKeywords, useShadowMask ? 
-                QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : 
+            SetKeywords(shadowMaskKeywords, useShadowMask ?
+                QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 :
                 -1);
             buffer.EndSample(bufferName);
             ExecuteBuffer();
@@ -267,9 +267,26 @@ namespace custom.render.pipeline {
                 return new Vector4(
                     light.shadowStrength, // 光源阴影强度
                     settings.directional.cascadeCount * ShadowedDirectionalLightCount++, // 光源对应光照贴图 tile 索引
-                    light.shadowNormalBias ,// 光源法线偏移
+                    light.shadowNormalBias,// 光源法线偏移
                     maskChannel
                 );
+            }
+            return new Vector4(0f, 0f, 0f, -1f);
+        }
+
+        public Vector4 ReserveOtherShadows(Light light, int visibleLightIndex) {
+            if (light.shadows != LightShadows.None && light.shadowStrength > 0f) {
+                LightBakingOutput lightBaking = light.bakingOutput;
+                if (
+                    lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+                    lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask
+                ) {
+                    useShadowMask = true;
+                    return new Vector4(
+                        light.shadowStrength, 0f, 0f,
+                        lightBaking.occlusionMaskChannel
+                    );
+                }
             }
             return new Vector4(0f, 0f, 0f, -1f);
         }
