@@ -137,5 +137,4 @@ GI GetGI (float2 lightMapUV,Surface surfaceWS,BRDF brdf) {
 }
 
 
-
 #endif

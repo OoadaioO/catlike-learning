@@ -3,7 +3,9 @@
 
 struct Surface{
     float3 position;
+    // 世界空间法线
     float3 normal;
+    // 基于插值的法线，可能是世界空间法线的偏移(未标准化)
     float3 interpolatedNormal;
     float3 viewDirection;
     float3 color;

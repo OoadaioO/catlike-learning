@@ -25,8 +25,8 @@ namespace custom.render.pipeline {
 
             public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
 
-            public enum CascadeBlendMode{
-                Hard,Soft,Dither
+            public enum CascadeBlendMode {
+                Hard, Soft, Dither
             }
             public CascadeBlendMode cascadeBlend;
         }
@@ -47,6 +47,20 @@ namespace custom.render.pipeline {
             cascadeFade = 0.1f,
             filter = FilterMode.PCF2x2,
             cascadeBlend = Directional.CascadeBlendMode.Hard,
+        };
+
+
+        [System.Serializable]
+        public struct Other {
+
+            public MapSize atlasSize;
+
+            public FilterMode filter;
+        }
+
+        public Other other = new Other {
+            atlasSize = MapSize._1024,
+            filter = FilterMode.PCF2x2
         };
 
 
