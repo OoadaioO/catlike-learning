@@ -13,6 +13,11 @@ namespace custom.render.pipeline {
 
         partial void PrepareBuffer();
 
+        partial void DrawGizmosBeforeFX();
+
+        partial void DrawGizmosAfterFX();
+
+
 
 #if UNITY_EDITOR
         static ShaderTagId[] legacyShaderTagIds = {
@@ -35,9 +40,14 @@ namespace custom.render.pipeline {
             Profiler.EndSample();
         }
 
-        partial void DrawGizmos() {
+        partial void DrawGizmosBeforeFX() {
             if (Handles.ShouldRenderGizmos()) {
                 context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
+            }
+        }
+
+        partial void DrawGizmosAfterFX() {
+            if (Handles.ShouldRenderGizmos()) {
                 context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
             }
         }

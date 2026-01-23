@@ -13,8 +13,14 @@ namespace custom.render.pipeline {
 
         ShadowSettings shadowSettings;
 
+        PostFXSettings postFXSettings;
+
         public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject,
-            ShadowSettings shadowSettings) {
+            ShadowSettings shadowSettings,
+            PostFXSettings postFXSettings
+        ) {
+
+            this.postFXSettings = postFXSettings;
             this.shadowSettings = shadowSettings;
             this.useDynamicBatching = useDynamicBatching;
             this.useGPUInstancing = useGPUInstancing;
@@ -44,7 +50,7 @@ namespace custom.render.pipeline {
         protected override void Render(ScriptableRenderContext context, List<Camera> cameras) {
 
             for (int i = 0; i < cameras.Count; i++) {
-                renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing, useLightsPerObject, shadowSettings);
+                renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing, useLightsPerObject, shadowSettings,postFXSettings);
             }
         }
     }

@@ -8,6 +8,8 @@ namespace custom.render.pipeline {
         static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
                             litShaderTagId = new ShaderTagId("CustomLit");
 
+        static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+
 
         ScriptableRenderContext context;
         Camera camera;
@@ -23,8 +25,12 @@ namespace custom.render.pipeline {
 
         Lighting lighting = new Lighting();
 
-        public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject, 
-            ShadowSettings shadowSettings) {
+        PostFXStack postFXStack = new PostFXStack();
+
+        public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,
+            ShadowSettings shadowSettings,
+            PostFXSettings postFXSettings
+        ) {
             this.context = context;
             this.camera = camera;
 
@@ -38,14 +44,19 @@ namespace custom.render.pipeline {
 
             buffer.BeginSample(SampleName);
             ExecuteBuffer();
-            lighting.Setup(context, cullingResults, shadowSettings,useLightsPerObject);
+            lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject);
             buffer.EndSample(SampleName);
-
+            
+            postFXStack.Setup(context, camera, postFXSettings);
             Setup();
-            DrawVisibleGemetry(useDynamicBatching, useGPUInstancing,useLightsPerObject);
+            DrawVisibleGemetry(useDynamicBatching, useGPUInstancing, useLightsPerObject);
             DrawUnsupportedShaders();
-            DrawGizmos();
-            lighting.Cleanup();
+            DrawGizmosBeforeFX();
+            if (postFXStack.IsActive) {
+                postFXStack.Render(frameBufferId);
+            }
+            DrawGizmosAfterFX();
+            Cleanup();
             Submit();
         }
 
@@ -64,6 +75,24 @@ namespace custom.render.pipeline {
             context.SetupCameraProperties(camera);
 
             CameraClearFlags flags = camera.clearFlags;
+
+            if (postFXStack.IsActive) {
+
+                if (flags > CameraClearFlags.Color) {
+                    flags = CameraClearFlags.Color;
+                }
+
+                buffer.GetTemporaryRT(
+                    frameBufferId, camera.pixelWidth, camera.pixelHeight,
+                    32, FilterMode.Bilinear, RenderTextureFormat.Default
+                );
+                buffer.SetRenderTarget(
+                    frameBufferId,
+                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+                );
+            }
+
+
             buffer.ClearRenderTarget(
                 flags <= CameraClearFlags.Depth,
                 flags <= CameraClearFlags.Color,
@@ -75,22 +104,30 @@ namespace custom.render.pipeline {
 
         }
 
-        void DrawVisibleGemetry(bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject) {
+        void Cleanup() {
+            lighting.Cleanup();
+            if (postFXStack.IsActive) {
+                buffer.ReleaseTemporaryRT(frameBufferId);
+            }
+        }
+
+
+        void DrawVisibleGemetry(bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject) {
 
             PerObjectData lightsPerObjectFlags = useLightsPerObject ?
-			    PerObjectData.LightData | PerObjectData.LightIndices :
-			    PerObjectData.None;
-            
+                PerObjectData.LightData | PerObjectData.LightIndices :
+                PerObjectData.None;
+
             var sortingSettings = new SortingSettings(camera) {
                 criteria = SortingCriteria.CommonOpaque
             };
             var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings) {
                 enableDynamicBatching = useDynamicBatching,
                 enableInstancing = useGPUInstancing,
-                perObjectData = PerObjectData.ReflectionProbes | 
-                        PerObjectData.Lightmaps | PerObjectData.ShadowMask | 
+                perObjectData = PerObjectData.ReflectionProbes |
+                        PerObjectData.Lightmaps | PerObjectData.ShadowMask |
                         PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                        PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume|
+                        PerObjectData.LightProbeProxyVolume | PerObjectData.OcclusionProbeProxyVolume |
                         lightsPerObjectFlags
             };
             drawingSettings.SetShaderPassName(1, litShaderTagId);
