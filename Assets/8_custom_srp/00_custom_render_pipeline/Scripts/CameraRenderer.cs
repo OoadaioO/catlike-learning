@@ -27,7 +27,9 @@ namespace custom.render.pipeline {
 
         PostFXStack postFXStack = new PostFXStack();
 
-        public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,
+        bool useHDR;
+
+        public void Render(ScriptableRenderContext context, Camera camera,bool allowHDR, bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,
             ShadowSettings shadowSettings,
             PostFXSettings postFXSettings
         ) {
@@ -42,12 +44,14 @@ namespace custom.render.pipeline {
                 return;
             }
 
+            useHDR = allowHDR && camera.allowHDR;
+
             buffer.BeginSample(SampleName);
             ExecuteBuffer();
             lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject);
             buffer.EndSample(SampleName);
             
-            postFXStack.Setup(context, camera, postFXSettings);
+            postFXStack.Setup(context, camera, postFXSettings,useHDR);
             Setup();
             DrawVisibleGemetry(useDynamicBatching, useGPUInstancing, useLightsPerObject);
             DrawUnsupportedShaders();
@@ -84,8 +88,9 @@ namespace custom.render.pipeline {
 
                 buffer.GetTemporaryRT(
                     frameBufferId, camera.pixelWidth, camera.pixelHeight,
-                    32, FilterMode.Bilinear, RenderTextureFormat.Default
+                    32, FilterMode.Bilinear , useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
                 );
+                
                 buffer.SetRenderTarget(
                     frameBufferId,
                     RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
