@@ -1,15 +1,25 @@
-using Unity.Collections;
+﻿using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using LightType = UnityEngine.LightType;
 
+
 namespace custom.render.pipeline {
+
     public partial class CustomRenderPipeline {
 
         partial void InitializeForEditor();
 
-
 #if UNITY_EDITOR
+
+        partial void InitializeForEditor() {
+            Lightmapping.SetDelegate(lightsDelegate);
+        }
+
+        protected override void Dispose(bool disposing) {
+            base.Dispose(disposing);
+            Lightmapping.ResetDelegate();
+        }
 
         static Lightmapping.RequestLightsDelegate lightsDelegate =
             (Light[] lights, NativeArray<LightDataGI> output) => {
@@ -51,7 +61,5 @@ namespace custom.render.pipeline {
             };
 
 #endif
-
-
     }
 }

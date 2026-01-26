@@ -1,28 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using UnityEngine;
 
 namespace custom.render.pipeline {
+
     [CreateAssetMenu(menuName = "Rendering/Custom Post FX Settings")]
     public class PostFXSettings : ScriptableObject {
 
-
-        [SerializeField] Shader shader = default;
-
-
-        [System.NonSerialized]
-        Material material;
-
-        public Material Material {
-            get {
-                if (material == null && shader != null) {
-                    material = new Material(shader);
-                    material.hideFlags = HideFlags.HideAndDontSave;
-                }
-                return material;
-            }
-        }
+        [SerializeField]
+        Shader shader = default;
 
         [System.Serializable]
         public struct BloomSettings {
@@ -43,6 +27,7 @@ namespace custom.render.pipeline {
 
             [Min(0f)]
             public float intensity;
+
             public bool fadeFireflies;
 
             public enum Mode { Additive, Scattering }
@@ -60,11 +45,10 @@ namespace custom.render.pipeline {
 
         public BloomSettings Bloom => bloom;
 
-
         [System.Serializable]
         public struct ToneMappingSettings {
 
-            public enum Mode { None = -1, ACES,Neutral, Reinhard }
+            public enum Mode { None = -1, ACES, Neutral, Reinhard }
 
             public Mode mode;
         }
@@ -73,5 +57,18 @@ namespace custom.render.pipeline {
         ToneMappingSettings toneMapping = default;
 
         public ToneMappingSettings ToneMapping => toneMapping;
+
+        [System.NonSerialized]
+        Material material;
+
+        public Material Material {
+            get {
+                if (material == null && shader != null) {
+                    material = new Material(shader);
+                    material.hideFlags = HideFlags.HideAndDontSave;
+                }
+                return material;
+            }
+        }
     }
 }

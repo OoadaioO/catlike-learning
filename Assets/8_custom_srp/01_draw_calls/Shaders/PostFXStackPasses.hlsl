@@ -1,4 +1,4 @@
-#ifndef CUSTOM_POST_FX_PASSES_INCLUDED
+﻿#ifndef CUSTOM_POST_FX_PASSES_INCLUDED
 #define CUSTOM_POST_FX_PASSES_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"

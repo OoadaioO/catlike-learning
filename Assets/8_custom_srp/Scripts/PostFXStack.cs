@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace custom.render.pipeline {
     public partial class PostFXStack {
+
         enum Pass {
             BloomAdd,
             BloomHorizontal,
@@ -193,7 +192,5 @@ namespace custom.render.pipeline {
                 MeshTopology.Triangles, 3
             );
         }
-
-
     }
 }
